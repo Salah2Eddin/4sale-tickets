@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "user_id": 1,
+    "event_id": 1,
+    "seat_id": 1,
+    "status": "valid",
+    "checked_in": false
+  },
+  {
+    "id": 2,
+    "user_id": 1,
+    "event_id": 1,
+    "seat_id": 1,
+    "status": "valid",
+    "checked_in": false
+  }
+]

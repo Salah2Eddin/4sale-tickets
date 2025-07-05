@@ -1,0 +1,26 @@
+{
+  "typescript": false,
+  "exceptionHandlerNamespace": "App/Exceptions/Handler",
+  "aliases": {
+    "App": "app"
+  },
+  "commands": [
+    "./commands"
+  ],
+  "providers": [],
+  "aceProviders": [],
+  "preloads": [],
+  "metaFiles": [
+    {
+      "pattern": "public/**/*",
+      "reloadServer": false
+    },
+    {
+      "pattern": "resources/views/**/*.edge",
+      "reloadServer": false
+    }
+  ],
+  "autoloads": {
+    "App": "./app"
+  }
+}
