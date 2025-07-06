@@ -1,7 +1,7 @@
 import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 
-import Event from '@modules/events/models/Event.js'
+import Event from '../../events/models/Event.js'
 
 export default class Waitlist extends BaseModel {
   @column({ isPrimary: true })
