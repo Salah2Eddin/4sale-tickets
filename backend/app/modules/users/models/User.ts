@@ -10,6 +10,7 @@ import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import Affiliate from '../../affliates/models/Affliate.js'
 import Ticket from '../../tickets/models/Ticket.js'
 import Wallet from '../../wallet/models/Wallet.js'
+import { UserRole } from 'contracts/user/enums/UserRole.js'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -28,6 +29,9 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
   @column()
   declare password: string
+
+  @column()
+  declare role: UserRole
 
   @hasMany(() => Ticket)
   declare tickets: HasMany<typeof Ticket>
