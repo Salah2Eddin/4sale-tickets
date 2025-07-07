@@ -1,6 +1,8 @@
 import { Authenticator } from "@adonisjs/auth"
 import User from "#modules/users/models/User"
 import { Authenticators } from "@adonisjs/auth/types"
+import WalletService from "../../wallet/services/WalletService.js"
+import db from "@adonisjs/lucid/services/db"
 
 export default class AuthService{
   static async login(email: string, password:string, auth: Authenticator<Authenticators>){
@@ -14,6 +16,7 @@ export default class AuthService{
 
   static async register(userData: { username: string; email: string; password: string }){
     const user = await User.create(userData)
+    await WalletService.make(user.id)
     return user
   }
 }
