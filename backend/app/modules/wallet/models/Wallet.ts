@@ -1,6 +1,6 @@
 import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
-import User from '../../users/models/User.js'
+import User from '#modules/users/models/User'
 
 export default class Wallet extends BaseModel {
   @column({ isPrimary: true })

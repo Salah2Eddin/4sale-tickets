@@ -1,8 +1,8 @@
 import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
 import type { HasMany } from '@adonisjs/lucid/types/relations'
 
-import TierDiscount from './TierDiscount.js'
-import Seat from './Seat.js'
+import TierDiscount from '#modules/tickets/models/TierDiscount'
+import Seat from '#modules/tickets/models/Seat'
 
 export default class Tier extends BaseModel {
   @column({ isPrimary: true })

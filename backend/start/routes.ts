@@ -8,8 +8,8 @@
 */
 
 import router from '@adonisjs/core/services/router'
-import TicketController from '../app/modules/tickets/controllers/TicketController.js'
-import AuthController from '../app/modules/users/controllers/AuthController.js'
+import TicketController from '#modules/tickets/controllers/TicketController'
+import AuthController from '#modules/users/controllers/AuthController'
 import { middleware } from './kernel.js'
 
 router.post('/tickets', [TicketController, 'create'])

@@ -7,10 +7,10 @@ import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 
 
-import Affiliate from '../../affliates/models/Affliate.js'
-import Ticket from '../../tickets/models/Ticket.js'
-import Wallet from '../../wallet/models/Wallet.js'
-import { UserRole } from 'contracts/user/enums/UserRole.js'
+import Affiliate from '#modules/affliates/models/Affliate'
+import Ticket from '#modules/tickets/models/Ticket'
+import Wallet from '#modules/wallet/models/Wallet'
+import { UserRole } from '#contracts/user/enums/UserRole'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],

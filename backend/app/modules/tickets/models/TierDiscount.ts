@@ -1,6 +1,6 @@
 import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
-import Tier from './Tier.js'
+import Tier from '#modules/tickets/models/Tier'
 
 export default class TierDiscount extends BaseModel {
   @column({ isPrimary: true })

@@ -1,5 +1,5 @@
 import { Authenticator } from "@adonisjs/auth"
-import User from "../models/User.js"
+import User from "#modules/users/models/User"
 import { Authenticators } from "@adonisjs/auth/types"
 
 export default class AuthService{

@@ -1,8 +1,8 @@
 import { BaseModel, column, belongsTo, hasOne, hasMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasOne, HasMany } from '@adonisjs/lucid/types/relations'
-import User from '../../users/models/User.js'
-import Waitlist from '../../waitlist/models/Waitlist.js'
-import Ticket from '../../tickets/models/Ticket.js'
+import User from '#modules/users/models/User'
+import Waitlist from '#modules/waitlist/models/Waitlist'
+import Ticket from '#modules/tickets/models/Ticket'
 
 export default class Event extends BaseModel {
   @column({ isPrimary: true })

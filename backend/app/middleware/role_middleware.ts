@@ -5,11 +5,7 @@ export default class RoleMiddleware {
   async handle({auth, response}: HttpContext, next: NextFn, roles: string[]) {
     const user = auth.user
 
-    if (!user) {
-      return response.unauthorized({ message: 'User not authenticated' })
-    }
-
-    if (!roles.includes(user.role)) {
+    if (!roles.includes(user!.role)) {
       return response.forbidden({ message: 'Access denied' })
     }
 

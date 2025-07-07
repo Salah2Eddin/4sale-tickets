@@ -2,7 +2,7 @@
 
 import type { HttpContext } from '@adonisjs/core/http'
 
-import TicketService from '../services/TicketService.js'
+import TicketService from '#modules/tickets/services/TicketService'
 
 export default class TicketController {
   public async create({ request, response }: HttpContext) {
