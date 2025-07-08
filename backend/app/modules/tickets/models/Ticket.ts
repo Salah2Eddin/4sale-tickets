@@ -24,6 +24,11 @@ export default class Ticket extends BaseModel {
   @column()
   declare checkedIn: boolean
 
+  @column()
+  declare price: number
+
+  
+
   @belongsTo(() => User)
   declare user: BelongsTo<typeof User>
 

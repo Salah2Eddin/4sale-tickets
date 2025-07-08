@@ -13,9 +13,9 @@ export default class extends BaseSchema {
         .notNullable()
         .references('id')
         .inTable('users')
-        .onDelete('CASCADE') // Optional: remove wallet if user is deleted
+        .onDelete('CASCADE')
 
-      table.decimal('balance', 12, 2).notNullable().defaultTo(0) // Optional field
+      table.decimal('balance', 12, 2).notNullable().defaultTo(0)
       table.timestamp('created_at', { useTz: true }).notNullable()
       table.timestamp('updated_at', { useTz: true }).notNullable()
     })

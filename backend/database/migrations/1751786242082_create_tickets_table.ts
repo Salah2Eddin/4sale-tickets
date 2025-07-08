@@ -27,9 +27,12 @@ export default class Tickets extends BaseSchema {
         .references('id')
         .inTable('seats')
         .onDelete('SET NULL')
+        
+      table.decimal('price', 10, 2).notNullable()
 
       table.timestamp('created_at', { useTz: true }).notNullable()
       table.timestamp('updated_at', { useTz: true }).notNullable()
+      
     })
   }
 

@@ -6,10 +6,10 @@ import TicketService from '#modules/tickets/services/TicketService'
 
 export default class TicketController {
   public async create({ request, response }: HttpContext) {
-    const { user_id, event_id, seat_id } = request.only(['user_id', 'event_id', 'seat_id'])
+    const { user_id, event_id, seat_id , ticket_count} = request.only(['user_id', 'event_id', 'seat_id', 'ticket_count'])
 
     try {
-      const ticket = await TicketService.createTicket(user_id, event_id, seat_id)
+      const ticket = await TicketService.createTicket(user_id, event_id, seat_id,ticket_count )
       return response.status(201).json({ message: 'Ticket created', ticket })
     } catch (error) {
       return response.badRequest({ error: error.message })
