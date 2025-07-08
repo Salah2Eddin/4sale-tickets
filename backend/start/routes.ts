@@ -10,6 +10,7 @@
 import router from '@adonisjs/core/services/router'
 import TicketController from '#modules/tickets/controllers/TicketController'
 import AuthController from '#modules/users/controllers/AuthController'
+import EventController from '#modules/events/controllers/EventController'
 import { middleware } from './kernel.js'
 
 router.post('/tickets', [TicketController, 'create'])
@@ -24,5 +25,24 @@ router.get('/:id', [TicketController, 'getOne'])
 router.put('/:id', [TicketController, 'updateOne'])
 router.delete('/:id', [TicketController, 'deleteOne'])
 router.get('/user/:userId', [TicketController, 'userTickets'])
-router.get('/event/:eventId', [TicketController, 'eventTickets'])
+
 router.post('/tickets/bulk-checkin', [TicketController,'bulkCheckIn'])
+
+
+router.post('/events', [EventController, 'create'])
+  .use([
+    middleware.auth({ guards: ['api'] }),
+    middleware.role(['admin'])
+  ])
+
+router.get('/events', [EventController, 'getAll'])
+  .use(middleware.auth({ guards: ['api'] }))
+
+router.get('/events/:id', [EventController, 'getById'])
+  .use(middleware.auth({ guards: ['api'] }))
+
+router.put('/events/:id', [EventController, 'update'])
+  .use(middleware.auth({ guards: ['api'] }))
+
+router.delete('/events/:id', [EventController, 'delete'])
+  .use(middleware.auth({ guards: ['api'] }))

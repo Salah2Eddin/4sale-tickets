@@ -3,6 +3,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 
 import TicketService from '#modules/tickets/services/TicketService'
+import SeatLockService from '#modules/tickets/services/SeatLockService'
 
 export default class TicketController {
   public async create({ request, response }: HttpContext) {
@@ -77,5 +78,31 @@ export default class TicketController {
 
     return response.ok({ updated: updatedTickets })
   }
+  //seats 
 
+  public async lockSeat({ request, auth, response }: HttpContext) {
+    const user = auth.user!
+    const { eventId, seatId } = request.only(['eventId', 'seatId'])
+    const seat = await SeatLockService.lockSeat(eventId, seatId, user.id)
+    return response.ok({ message: 'Seat locked', seat })
+  }
+
+  public async unlockSeat({ request, auth, response }: HttpContext) {
+    const user = auth.user!
+    const { eventId, seatId } = request.only(['eventId', 'seatId'])
+    const seat = await SeatLockService.unlockSeat(eventId, seatId, user.id)
+    return response.ok({ message: 'Seat unlocked', seat })
+  }
+
+  public async bookSeat({ request, auth, response }: HttpContext) {
+    const user = auth.user!
+    const { eventId, seatId } = request.only(['eventId', 'seatId'])
+    const seat = await SeatLockService.bookSeat(eventId, seatId, user.id)
+    return response.ok({ message: 'Seat booked', seat })
+  }
+
+  public async getSeatsByEvent({ params, response }: HttpContext) {
+    const seats = await SeatLockService.getSeatsForEvent(Number(params.eventId))
+    return response.ok(seats)
+  }
 }

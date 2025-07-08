@@ -12,8 +12,32 @@ export default class Event extends BaseModel {
   @column()
   declare organizerId: number
 
+  @column()
+  declare title: string
+
+  @column()
+  declare description: string
+
+  @column()
+  declare location: string
+
+  @column()
+  declare basePrice: number
+
+  @column()
+  declare currency: string
+
+  @column()
+  declare capacity: number
+
+  @column()
+  declare isSoldOut: boolean
+
   @column.dateTime()
   declare startsAt: DateTime
+
+  @column.dateTime()
+  declare endsAt: DateTime
 
   @column.dateTime()
   declare earlyBirdEndsAt: DateTime

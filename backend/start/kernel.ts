@@ -10,6 +10,7 @@
 
 import router from '@adonisjs/core/services/router'
 import server from '@adonisjs/core/services/server'
+import { connectMongoDB } from '#config/mongodb'
 
 /**
  * The error handler is used to convert an exception
@@ -45,3 +46,6 @@ export const middleware = router.named({
   auth: () => import('#middleware/auth_middleware'),
   role: () => import('#middleware/role_middleware'), // user role middleware
 })
+
+
+await connectMongoDB()
