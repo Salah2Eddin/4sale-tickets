@@ -1,7 +1,7 @@
 import { BaseModel, column, belongsTo, hasMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import User from '#modules/users/models/User'
-import Transaction from './Transaction.js'
+import Transaction from '#modules/wallet/models/Transaction'
 
 export default class Wallet extends BaseModel {
   @column({ isPrimary: true })
@@ -11,11 +11,20 @@ export default class Wallet extends BaseModel {
   declare userId: number
 
   @column()
-  declare balance: number
+  declare _balance: number
 
   @belongsTo(() => User)
   declare user: BelongsTo<typeof User>
 
   @hasMany(()=>Transaction)
   declare transactions: HasMany<typeof Transaction>
+
+
+  public get balance(): number {
+    return Number(this._balance)
+  }
+
+  public set balance(value: number) {
+    this._balance = value
+  }
 }

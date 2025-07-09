@@ -1,7 +1,7 @@
 import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
-import Wallet from './Wallet.js'
+import Wallet from '#modules/wallet/models/Wallet'
 
 export default class Transaction extends BaseModel {
   @column({ isPrimary: true })
@@ -19,9 +19,9 @@ export default class Transaction extends BaseModel {
   @column.dateTime({autoCreate: true})
   declare date: DateTime
 
-  @belongsTo(() => Wallet)
+  @belongsTo(() => Wallet, {foreignKey: "fromId"})
   declare fromWallet: BelongsTo<typeof Wallet>
 
-  @belongsTo(() => Wallet)
+  @belongsTo(() => Wallet, {foreignKey: "toId"})
   declare toWallet: BelongsTo<typeof Wallet>
 }

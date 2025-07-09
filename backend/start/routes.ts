@@ -19,9 +19,24 @@ router.post('/auth/logout', [AuthController, 'logout']).use(
   middleware.auth({guards: ['api']})
 )
 router.post('/auth/register', [AuthController, 'register'])
+
+// Wallet Routes
 router.get('/wallet/balance', [WalletController, 'balance']).use(
   middleware.auth({guards: ['api']})
 )
+router.post('/wallet/recharge', [WalletController, 'rechargeBalance']).use(
+  middleware.auth({guards: ['api']})
+)
+router.get('/wallet/transactions', [WalletController, 'transactions']).use(
+  middleware.auth({guards: ['api']})
+)
+router.get('/wallet/transaction/:id', [WalletController, 'transaction']).use(
+  middleware.auth({guards: ['api']})
+)
+router.post('/wallet/pay', [WalletController, 'makeTransaction']).use(
+  middleware.auth({guards: ['api']})
+)
+
 router.post('/', [TicketController, 'create'])
 router.get('/', [TicketController, 'getAll'])
 router.get('/:id', [TicketController, 'getOne'])
