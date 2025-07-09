@@ -33,6 +33,9 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column()
   declare role: UserRole
 
+  @column()
+  declare isVerified: boolean
+
   @hasMany(() => Ticket)
   declare tickets: HasMany<typeof Ticket>
 

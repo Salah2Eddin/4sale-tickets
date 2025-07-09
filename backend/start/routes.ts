@@ -11,7 +11,8 @@ import router from '@adonisjs/core/services/router'
 import TicketController from '#modules/tickets/controllers/TicketController'
 import AuthController from '#modules/users/controllers/AuthController'
 import { middleware } from './kernel.js'
-import WalletController from '../app/modules/wallet/controllers/WalletController.js'
+import WalletController from '#modules/wallet/controllers/WalletController'
+import VerificationController from '#modules/users/controllers/VerificationController'
 
 router.post('/tickets', [TicketController, 'create'])
 router.post('/auth/login', [AuthController, 'login'])
@@ -19,6 +20,15 @@ router.post('/auth/logout', [AuthController, 'logout']).use(
   middleware.auth({guards: ['api']})
 )
 router.post('/auth/register', [AuthController, 'register'])
+
+// Verification
+router.get('/verify/new', [VerificationController, 'getVerification']).use(
+  middleware.auth({guards: ['api']})
+)
+router.get('/verify/:token', [VerificationController, 'verify']).as("verify").use(
+  middleware.auth({guards: ['api']})
+)
+
 
 // Wallet Routes
 router.get('/wallet/balance', [WalletController, 'balance']).use(
