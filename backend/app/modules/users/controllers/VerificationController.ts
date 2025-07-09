@@ -1,5 +1,6 @@
 import { HttpContext } from '@adonisjs/core/http'
 import VerificationService from '#modules/users/services/VerificationService'
+import { verificationRequestValidator } from '#modules/users/validators/VerificationValidators'
 
 export default class VerificationController {
   async getVerification({ auth, response }: HttpContext) {
@@ -7,12 +8,13 @@ export default class VerificationController {
     const verificationToken = await VerificationService.generateVerificationToken(user.id)
     VerificationService.sendTokenToUser(user.email, verificationToken)
     return response.ok({
-      message: "Verification url sent"
+      message: 'Verification code sent',
     })
   }
 
-  async verify({ params, auth, response }: HttpContext) {
-    const token = await VerificationService.getToken(params.token)
+  async verify({ request, auth, response }: HttpContext) {
+    const { code } = await verificationRequestValidator.validate(request.all())
+    const token = await VerificationService.getToken(code)
     const user = await auth.user!
     if (!VerificationService.isValidToken(user.id, token)) {
       return response.status(400).send({

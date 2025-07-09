@@ -1,14 +1,15 @@
+import MailService from '#modules/shared/services/mail_service'
 import User from '#modules/users/models/User'
 import VerificationToken from '#modules/users/models/VerificationToken'
-import router from '@adonisjs/core/services/router'
 import { randomBytes } from 'crypto'
 import { DateTime } from 'luxon'
 
+const TOKEN_LENGTH = 8
 const TOKEN_EXPIRY_MINUTES = 10
 
 export default class VerificationService {
   static async generateVerificationToken(userId: number): Promise<VerificationToken> {
-    const token = randomBytes(32).toString('hex')
+    const token = randomBytes(TOKEN_LENGTH/2).toString('hex')
     const verificationToken = await VerificationToken.create({
       userId: userId,
       value: token,
@@ -41,8 +42,10 @@ export default class VerificationService {
     await token.delete()
   }
 
-  static sendTokenToUser(email:string, token:VerificationToken){
-    console.log("Email to: " + email)
-    console.log("Verification url: ", router.builder().params({token: token.value}).make("verify"))
+  static sendTokenToUser(email: string, token: VerificationToken) {
+    MailService.send(email, [
+      'Your verification token is:',
+      token.value,
+    ])
   }
 }
