@@ -16,8 +16,6 @@ export default class extends BaseSchema {
         .onDelete('CASCADE')
 
       table.decimal('balance', 12, 2).notNullable().defaultTo(0)
-      table.timestamp('created_at', { useTz: true }).notNullable()
-      table.timestamp('updated_at', { useTz: true }).notNullable()
     })
   }
 

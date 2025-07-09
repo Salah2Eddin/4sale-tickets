@@ -11,9 +11,4 @@ export default class AuthService{
   static async logout(auth: Authenticator<Authenticators>){
     await auth.use('api').invalidateToken()
   }
-
-  static async register(userData: { username: string; email: string; password: string }){
-    const user = await User.create(userData)
-    return user
-  }
 }
