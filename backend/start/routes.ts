@@ -29,9 +29,7 @@ router
   .use(middleware.auth({ guards: ['api'] }))
 
 // Reset password routes
-router
-  .post('/password/forget', [AuthController, 'forgetPassword'])
-  .use([middleware.auth({ guards: ['api'] })])
+router.post('/password/forget', [AuthController, 'forgetPassword']).use([middleware.guestOnly()])
 router.post('/password/reset', [AuthController, 'resetPassword']).use([middleware.guestOnly()])
 
 // Wallet Routes
