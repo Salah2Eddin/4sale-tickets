@@ -22,11 +22,19 @@ export default class AuthController {
 
   async register({ request, response }: HttpContext) {
     const { username, email, password } = await registerValidator.validate(request.all())
-    const user = await AuthService.register(username, email, password)
-    return response.status(201).json({
-      message: 'User registered',
-      userId: user.id,
-    })
+    try {
+      const user = await AuthService.register(username, email, password)
+      return response.status(201).json({
+        message: 'User registered',
+        userId: user.id,
+      })
+    } catch (error) {
+      if (error.code == 'ER_DUP_ENTRY') {
+        return response.conflict({
+          message: 'Username or email already exists',
+        })
+      }
+    }
   }
 
   async forgetPassword({ request, response }: HttpContext) {
