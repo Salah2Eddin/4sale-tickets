@@ -58,7 +58,7 @@ router.delete('/:id', [TicketController, 'deleteOne'])
 router.get('/user/:userId', [TicketController, 'userTickets'])
 router.get('/event/:eventId', [TicketController, 'eventTickets'])
 router.post('/tickets/bulk-checkin', [TicketController, 'bulkCheckIn'])
-router.post('/tickets/bulk-checkin', [TicketController,'bulkCheckIn'])
+
 
 router.post('/events', [EventController, 'create'])
   .use([

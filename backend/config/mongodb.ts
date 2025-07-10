@@ -1,7 +1,9 @@
 
 import mongoose from 'mongoose'
+import env from '#start/env'
 
-const MONGODB_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/seat_cache'
+const MONGODB_URI = env.get('MONGO_URI')!
+
 
 export async function connectMongoDB() {
     try {
