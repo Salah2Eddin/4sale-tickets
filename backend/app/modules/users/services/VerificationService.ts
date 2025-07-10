@@ -9,7 +9,7 @@ const TOKEN_EXPIRY_MINUTES = 10
 
 export default class VerificationService {
   static async generateVerificationToken(userId: number): Promise<VerificationToken> {
-    const token = randomBytes(TOKEN_LENGTH/2).toString('hex')
+    const token = randomBytes(TOKEN_LENGTH / 2).toString('hex')
     const verificationToken = await VerificationToken.create({
       userId: userId,
       value: token,
@@ -32,18 +32,12 @@ export default class VerificationService {
     return token.userId == userId
   }
 
-  static async verifyToken(token: VerificationToken) {
-    const user = await User.findOrFail(token.userId)
-    user.isVerified = true
-    await user.save()
-  }
-
   static async deleteToken(token: VerificationToken) {
     await token.delete()
   }
 
   static sendTokenToUser(email: string, token: VerificationToken) {
-    MailService.send(email, [
+    MailService.send(email, '4Sale Tickets Verification token', [
       'Your verification token is:',
       token.value,
     ])

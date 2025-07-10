@@ -22,4 +22,13 @@ export default class UserService {
       return user
     })
   }
+
+  static async verifyUser(user: User) {
+    user.isVerified = true
+    await user.save()
+  }
+
+  static async getUserFromEmail(email: string) {
+    return await User.findByOrFail({ email: email })
+  }
 }

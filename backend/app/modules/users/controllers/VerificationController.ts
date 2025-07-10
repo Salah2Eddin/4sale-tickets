@@ -1,5 +1,6 @@
 import { HttpContext } from '@adonisjs/core/http'
 import VerificationService from '#modules/users/services/VerificationService'
+import UserService from '#modules/users/services/UserService'
 import { verificationRequestValidator } from '#modules/users/validators/VerificationValidators'
 
 export default class VerificationController {
@@ -22,7 +23,7 @@ export default class VerificationController {
         message: 'The verification token is invalid or has expired.',
       })
     }
-    await VerificationService.verifyToken(token)
+    await UserService.verifyUser(user)
     await VerificationService.deleteToken(token)
     return response.ok({
       message: 'Verification successful',

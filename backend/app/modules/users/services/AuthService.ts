@@ -21,4 +21,9 @@ export default class AuthService{
     VerificationService.sendTokenToUser(user.email, verificationToken)
     return user
   }
+
+  static async changePassword(user: User, newPassword: string){
+    user.password = newPassword
+    await user.save()
+  }
 }

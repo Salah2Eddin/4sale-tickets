@@ -2,14 +2,14 @@ import env from '#start/env'
 import mail from '@adonisjs/mail/services/main'
 
 export default class m {
-  static async send(to: string, content: string[]) {
+  static async send(to: string, subject: string, content: string[]) {
     // not working for some reason!
 
     await mail.send((message) => {
       message
         .to(to)
         .from(env.get('SMTP_USERNAME'))
-        .subject('Verify your email address')
+        .subject(subject)
         .text(
           content.reduce((prev, cur, _idx, _arr) => {
             if (prev.length == 0) prev = cur

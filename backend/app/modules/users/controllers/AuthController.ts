@@ -1,6 +1,14 @@
 import { HttpContext } from '@adonisjs/core/http'
 import AuthService from '#modules/users/services/AuthService'
-import {loginValidator, registerValidator} from '#modules/users/validators/AuthValidators'
+import {
+  forgetPasswordValidator,
+  loginValidator,
+  registerValidator,
+  resetPasswordValidator,
+} from '#modules/users/validators/AuthValidators'
+import VerificationService from '#modules/users/services/VerificationService'
+import UserService from '#modules/users/services/UserService'
+import { errors as lucidErrors } from '@adonisjs/lucid'
 
 export default class AuthController {
   async login({ request, auth }: HttpContext) {
@@ -17,7 +25,37 @@ export default class AuthController {
     const user = await AuthService.register(username, email, password)
     return response.status(201).json({
       message: 'User registered',
-      userId: user.id
+      userId: user.id,
     })
+  }
+
+  async forgetPassword({ request, response }: HttpContext) {
+    const { email } = await forgetPasswordValidator.validate(request.all())
+    try {
+      const user = await UserService.getUserFromEmail(email)
+      const verificationToken = await VerificationService.generateVerificationToken(user.id)
+      await VerificationService.sendTokenToUser(email, verificationToken)
+    } catch (error) {
+      if (!(error instanceof lucidErrors.E_ROW_NOT_FOUND)) {
+        throw error
+      }
+    }
+    return response.ok({ message: 'Reset password token sent to user if user exists' })
+  }
+
+  async resetPassword({ request, response }: HttpContext) {
+    const { email, verificationCode, newPassword } = await resetPasswordValidator.validate(
+      request.all()
+    )
+    const user = await UserService.getUserFromEmail(email)
+    const token = await VerificationService.getToken(verificationCode)
+    if (!VerificationService.isValidToken(user.id, token)) {
+      return response.status(400).send({
+        code: 'E_INVALID_TOKEN',
+        message: 'The verification token is invalid or has expired.',
+      })
+    }
+    await AuthService.changePassword(user, newPassword)
+    return response.noContent()
   }
 }

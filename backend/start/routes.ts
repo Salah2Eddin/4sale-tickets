@@ -10,14 +10,14 @@
 import router from '@adonisjs/core/services/router'
 import TicketController from '#modules/tickets/controllers/TicketController'
 import AuthController from '#modules/users/controllers/AuthController'
-import { middleware } from './kernel.js'
+import { middleware } from '#start/kernel'
 import WalletController from '#modules/wallet/controllers/WalletController'
 import VerificationController from '#modules/users/controllers/VerificationController'
 
 router.post('/tickets', [TicketController, 'create'])
-router.post('/auth/login', [AuthController, 'login'])
+router.post('/auth/login', [AuthController, 'login']).use([middleware.guestOnly()])
 router.post('/auth/logout', [AuthController, 'logout']).use(middleware.auth({ guards: ['api'] }))
-router.post('/auth/register', [AuthController, 'register'])
+router.post('/auth/register', [AuthController, 'register']).use([middleware.guestOnly()])
 
 // Verification
 router
@@ -27,6 +27,12 @@ router
   .post('/verify/', [VerificationController, 'verify'])
   .as('verify')
   .use(middleware.auth({ guards: ['api'] }))
+
+// Reset password routes
+router
+  .post('/password/forget', [AuthController, 'forgetPassword'])
+  .use([middleware.auth({ guards: ['api'] })])
+router.post('/password/reset', [AuthController, 'resetPassword']).use([middleware.guestOnly()])
 
 // Wallet Routes
 router
