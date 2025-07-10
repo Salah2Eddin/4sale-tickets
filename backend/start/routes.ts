@@ -13,6 +13,7 @@ import AuthController from '#modules/users/controllers/AuthController'
 import { middleware } from '#start/kernel'
 import WalletController from '#modules/wallet/controllers/WalletController'
 import VerificationController from '#modules/users/controllers/VerificationController'
+import EventController from '#modules/events/controllers/EventController'
 
 router.post('/tickets', [TicketController, 'create'])
 router.post('/auth/login', [AuthController, 'login']).use([middleware.guestOnly()])
@@ -57,3 +58,18 @@ router.delete('/:id', [TicketController, 'deleteOne'])
 router.get('/user/:userId', [TicketController, 'userTickets'])
 router.get('/event/:eventId', [TicketController, 'eventTickets'])
 router.post('/tickets/bulk-checkin', [TicketController, 'bulkCheckIn'])
+router.post('/tickets/bulk-checkin', [TicketController,'bulkCheckIn'])
+
+router.post('/events', [EventController, 'create'])
+  .use([
+    middleware.auth({ guards: ['api'] }),
+    middleware.role(['admin'])
+  ])
+router.get('/events', [EventController, 'getAll'])
+  .use(middleware.auth({ guards: ['api'] }))
+router.get('/events/:id', [EventController, 'getById'])
+  .use(middleware.auth({ guards: ['api'] }))
+router.put('/events/:id', [EventController, 'update'])
+  .use(middleware.auth({ guards: ['api'] }))
+router.delete('/events/:id', [EventController, 'delete'])
+  .use(middleware.auth({ guards: ['api'] }))

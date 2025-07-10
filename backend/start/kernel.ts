@@ -10,6 +10,7 @@
 
 import router from '@adonisjs/core/services/router'
 import server from '@adonisjs/core/services/server'
+import { connectMongoDB } from '#config/mongodb'
 
 /**
  * The error handler is used to convert an exception
@@ -47,3 +48,6 @@ export const middleware = router.named({
   verification: () => import('#middleware/verification_middleware'),
   guestOnly: () => import('#middleware/guest_only_middleware'),
 })
+
+
+await connectMongoDB()
