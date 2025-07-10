@@ -14,8 +14,9 @@ import { middleware } from '#start/kernel'
 import WalletController from '#modules/wallet/controllers/WalletController'
 import VerificationController from '#modules/users/controllers/VerificationController'
 import EventController from '#modules/events/controllers/EventController'
+import FormsController from '#modules/form-builder/controllers/FormsController'
+import FormSubmissionsController from '#modules/form-builder/controllers/FormSubmissionController'
 
-router.post('/tickets', [TicketController, 'create'])
 router.post('/auth/login', [AuthController, 'login']).use([middleware.guestOnly()])
 router.post('/auth/logout', [AuthController, 'logout']).use(middleware.auth({ guards: ['api'] }))
 router.post('/auth/register', [AuthController, 'register']).use([middleware.guestOnly()])
@@ -50,26 +51,32 @@ router
   .post('/wallet/pay', [WalletController, 'makeTransaction'])
   .use([middleware.auth({ guards: ['api'] }), middleware.verification()])
 
-router.post('/', [TicketController, 'create'])
-router.get('/', [TicketController, 'getAll'])
-router.get('/:id', [TicketController, 'getOne'])
-router.put('/:id', [TicketController, 'updateOne'])
-router.delete('/:id', [TicketController, 'deleteOne'])
-router.get('/user/:userId', [TicketController, 'userTickets'])
-router.get('/event/:eventId', [TicketController, 'eventTickets'])
-router.post('/tickets/bulk-checkin', [TicketController, 'bulkCheckIn'])
-router.post('/tickets/bulk-checkin', [TicketController,'bulkCheckIn'])
+router.post('tickets/', [TicketController, 'create'])
+router.get('tickets/', [TicketController, 'getAll'])
+router.get('tickets/:id', [TicketController, 'getOne'])
+router.put('tickets/:id', [TicketController, 'updateOne'])
+router.delete('tickets/:id', [TicketController, 'deleteOne'])
+router.get('tickets/user/:userId', [TicketController, 'userTickets'])
+router.get('tickets/event/:eventId', [TicketController, 'eventTickets'])
+router.post('tickets/tickets/bulk-checkin', [TicketController, 'bulkCheckIn'])
 
-router.post('/events', [EventController, 'create'])
-  .use([
-    middleware.auth({ guards: ['api'] }),
-    middleware.role(['admin'])
-  ])
-router.get('/events', [EventController, 'getAll'])
-  .use(middleware.auth({ guards: ['api'] }))
-router.get('/events/:id', [EventController, 'getById'])
-  .use(middleware.auth({ guards: ['api'] }))
-router.put('/events/:id', [EventController, 'update'])
-  .use(middleware.auth({ guards: ['api'] }))
-router.delete('/events/:id', [EventController, 'delete'])
-  .use(middleware.auth({ guards: ['api'] }))
+router
+  .post('/events', [EventController, 'create'])
+  .use([middleware.auth({ guards: ['api'] }), middleware.role(['admin'])])
+router.get('/events', [EventController, 'getAll']).use(middleware.auth({ guards: ['api'] }))
+router.get('/events/:id', [EventController, 'getById']).use(middleware.auth({ guards: ['api'] }))
+router.put('/events/:id', [EventController, 'update']).use(middleware.auth({ guards: ['api'] }))
+router.delete('/events/:id', [EventController, 'delete']).use(middleware.auth({ guards: ['api'] }))
+
+// Form management routes
+router.post('forms/', [FormsController, 'create'])
+router.get('forms/:id', [FormsController, 'get'])
+router.put('forms/:id', [FormsController, 'update'])
+
+// Form submissions routes
+router.get('forms/:formId/', [FormSubmissionsController, 'submissions'])
+router.get('forms/:formId/:id', [FormSubmissionsController, 'submission'])
+router.get('forms/:formId/export', [FormSubmissionsController, 'exportSubmissions'])
+
+// Public form submission route
+router.post('/forms/:formId/submit', [FormSubmissionsController, 'submit'])

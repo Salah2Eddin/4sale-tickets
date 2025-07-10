@@ -1,14 +1,17 @@
-'use strict'
+import User from '#modules/users/models/User'
+import Event from '#modules/events/models/Event'
+import Seat from '#modules/tickets/models/Seat'
+import Ticket from '#modules/tickets/models/Ticket'
 
-import User from '../../users/models/User.js'
-import Event from '../../events/models/Event.js'
-import Seat from '../../tickets/models/Seat.js'
-import Ticket from '../../tickets/models/Ticket.js'
-
-import { generateTicketQR } from './qrService.js'
+import { generateTicketQR } from '#modules/tickets/services/qrService'
 import { DateTime } from 'luxon'
 
 export default class TicketService {
+    static async validateTicketOwner(ticketId:number, userId:number): Promise<boolean>{
+        const ticket = await Ticket.findOrFail(ticketId)
+        return ticket.userId == userId
+    }
+
     static async createTicket(userId: number, eventId: number, seatId: number, ticketCount: number) {
         const user = await User.find(userId)
         const event = await Event.find(eventId)

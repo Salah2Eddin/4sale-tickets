@@ -4,6 +4,7 @@ import User from '#modules/users/models/User'
 import Waitlist from '#modules/waitlist/models/Waitlist'
 import Ticket from '#modules/tickets/models/Ticket'
 import { DateTime } from 'luxon'
+import Form from '#modules/form-builder/models/Form'
 
 export default class Event extends BaseModel {
   @column({ isPrimary: true })
@@ -11,6 +12,9 @@ export default class Event extends BaseModel {
 
   @column()
   declare organizerId: number
+
+  @column()
+  declare formId?: number
 
   @column()
   declare title: string
@@ -56,4 +60,7 @@ export default class Event extends BaseModel {
 
   @hasMany(() => Ticket)
   declare tickets: HasMany<typeof Ticket>
+
+  @hasOne(()=>Form)
+  declare form: HasOne<typeof Form>
 }
