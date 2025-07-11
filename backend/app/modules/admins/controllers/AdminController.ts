@@ -51,11 +51,11 @@ export default class AdminsController {
     return AdminService.generateTicketForUser(userId, eventId, seatId, ticketCount)
   }
 
-  async banUser({ params }: HttpContext) {
-    return AdminService.banUser(params.userId)
-  }
+  // async banUser({ params }: HttpContext) {
+  //   return AdminService.banUser(params.userId)
+  // }
 
-  async unbanUser({ params }: HttpContext) {
-    return AdminService.unbanUser(params.userId)
-  }
+  // async unbanUser({ params }: HttpContext) {
+  //   return AdminService.unbanUser(params.userId)
+  // }
 }

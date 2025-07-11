@@ -14,8 +14,8 @@ import { middleware } from '#start/kernel'
 import WalletController from '#modules/wallet/controllers/WalletController'
 import VerificationController from '#modules/users/controllers/VerificationController'
 import EventController from '#modules/events/controllers/EventController'
+import AdminsController from '#modules/admins/controllers/AdminController'
 
-router.post('/tickets', [TicketController, 'create'])
 router.post('/auth/login', [AuthController, 'login']).use([middleware.guestOnly()])
 router.post('/auth/logout', [AuthController, 'logout']).use(middleware.auth({ guards: ['api'] }))
 router.post('/auth/register', [AuthController, 'register']).use([middleware.guestOnly()])
@@ -50,13 +50,13 @@ router
   .post('/wallet/pay', [WalletController, 'makeTransaction'])
   .use([middleware.auth({ guards: ['api'] }), middleware.verification()])
 
-router.post('/', [TicketController, 'create'])
-router.get('/', [TicketController, 'getAll'])
-router.get('/:id', [TicketController, 'getOne'])
-router.put('/:id', [TicketController, 'updateOne'])
-router.delete('/:id', [TicketController, 'deleteOne'])
-router.get('/user/:userId', [TicketController, 'userTickets'])
-router.get('/event/:eventId', [TicketController, 'eventTickets'])
+router.post('/tickets', [TicketController, 'create'])
+router.get('/tickets', [TicketController, 'getAll'])
+router.get('/tickets/:id', [TicketController, 'getOne'])
+router.put('/tickets/:id', [TicketController, 'updateOne'])
+router.delete('/tickets/:id', [TicketController, 'deleteOne'])
+router.get('/tickets/user/:userId', [TicketController, 'userTickets'])
+router.get('/tickets/event/:eventId', [TicketController, 'eventTickets'])
 router.post('/tickets/bulk-checkin', [TicketController, 'bulkCheckIn'])
 
 
@@ -73,3 +73,13 @@ router.put('/events/:id', [EventController, 'update'])
   .use(middleware.auth({ guards: ['api'] }))
 router.delete('/events/:id', [EventController, 'delete'])
   .use(middleware.auth({ guards: ['api'] }))
+
+router.get('/admin/', [AdminsController, 'getAllAdmins'])
+router.get('/admin/:id', [AdminsController, 'getAdminById'])
+router.post('/admin/', [AdminsController, 'createAdmin'])
+router.put('/admin/:id', [AdminsController, 'updateAdmin'])
+router.delete('/admin/:id', [AdminsController, 'deleteAdmin'])
+router.post('/admin/create-user', [AdminsController, 'createUser'])
+router.post('/admin/add-event', [AdminsController, 'addEvent'])
+router.post('/admin/add-money', [AdminsController, 'addMoney'])
+router.post('/admin/generate-ticket', [AdminsController, 'generateTicket'])
