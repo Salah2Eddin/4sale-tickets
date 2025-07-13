@@ -1,3 +1,4 @@
+import EventFormExistsException from '#exceptions/forms/event_form_exists_exception'
 import Form from '#modules/form-builder/models/Form'
 
 export default class FormService {
@@ -8,7 +9,15 @@ export default class FormService {
   }
 
   static async create(payload: Partial<Form>) {
-    return Form.create(payload)
+    try{
+      const form = await Form.create(payload)
+      return form
+    }catch(error){
+      if (error.code === "ER_DUP_ENTRY"){
+        throw EventFormExistsException
+      }
+      throw error
+    }
   }
 
   static async update(id: number, payload: Partial<Form>) {

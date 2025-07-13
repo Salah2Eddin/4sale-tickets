@@ -23,7 +23,7 @@ export default class Form extends BaseModel {
 
   @column({
     prepare: (value: FormField[]) => JSON.stringify(value),
-    consume: (value: string) => JSON.parse(value),
+    consume: (value: string) => value,
   })
   declare fields: FormField[]
 

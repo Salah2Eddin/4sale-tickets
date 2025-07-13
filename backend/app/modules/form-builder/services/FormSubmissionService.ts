@@ -13,8 +13,6 @@ export default class FormSubmissionService {
   }
 
   static async createOrUpdate(ticketId: number, form: Form, data: Record<string, any>) {
-    // if ticket submitted this form, update submission data
-    // otherwise create a new submission
     if (await this.isFirstSubmission(ticketId)) {
       const submission = await FormSubmissionService.createSubmission(form, data)
       return submission
@@ -98,16 +96,10 @@ export default class FormSubmissionService {
 
     if (format === 'json') {
       return {
-        form: {
-          id: form.id,
-          title: form.event.title,
-          description: form.event.description,
-          fields: form.fields,
-        },
         submissions: submissions.map((sub) => ({
           id: sub.id,
           data: sub.data,
-          submittedAt: sub.createdAt,
+          lastUpdate: sub.updatedAt,
         })),
       }
     }

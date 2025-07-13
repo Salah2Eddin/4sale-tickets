@@ -26,7 +26,7 @@ export default class FormSubmission extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 
-  @belongsTo(() => Form)
+  @belongsTo(() => Form, {foreignKey: "formId"})
   declare form: BelongsTo<typeof Form>
 
   @belongsTo(() => Ticket)

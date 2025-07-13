@@ -58,7 +58,7 @@ router.put('tickets/:id', [TicketController, 'updateOne'])
 router.delete('tickets/:id', [TicketController, 'deleteOne'])
 router.get('tickets/user/:userId', [TicketController, 'userTickets'])
 router.get('tickets/event/:eventId', [TicketController, 'eventTickets'])
-router.post('tickets/tickets/bulk-checkin', [TicketController, 'bulkCheckIn'])
+router.post('tickets/bulk-checkin', [TicketController, 'bulkCheckIn'])
 
 router
   .post('/events', [EventController, 'create'])
@@ -73,10 +73,10 @@ router.post('forms/', [FormsController, 'create'])
 router.get('forms/:id', [FormsController, 'get'])
 router.put('forms/:id', [FormsController, 'update'])
 
-// Form submissions routes
-router.get('forms/:formId/', [FormSubmissionsController, 'submissions'])
-router.get('forms/:formId/:id', [FormSubmissionsController, 'submission'])
-router.get('forms/:formId/export', [FormSubmissionsController, 'exportSubmissions'])
+// Form submission route
+router.post('/forms/:id/submit', [FormSubmissionsController, 'submit'])
 
-// Public form submission route
-router.post('/forms/:formId/submit', [FormSubmissionsController, 'submit'])
+// Form submissions routes
+router.get('forms/:id/submissions', [FormSubmissionsController, 'submissions'])
+router.get('forms/:id/export', [FormSubmissionsController, 'exportSubmissions'])
+router.get('forms/:id/:submissionId', [FormSubmissionsController, 'submission'])
