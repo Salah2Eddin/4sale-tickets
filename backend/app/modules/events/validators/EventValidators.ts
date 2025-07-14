@@ -1,0 +1,28 @@
+import vine from '@vinejs/vine'
+import { DateTime } from 'luxon'
+
+export const createEventValidator = vine.compile(
+  vine.object({
+    title: vine.string().minLength(1),
+    description: vine.string().minLength(1),
+    location: vine.string().minLength(1),
+    basePrice: vine.number().min(0),
+    currency: vine.string().minLength(3).maxLength(3),
+    startsAt: vine.date({ formats: "iso8601" }).transform((date) => DateTime.fromJSDate(date)),
+    endsAt: vine.date({ formats: "iso8601" }).afterField('startsAt').transform((date) => DateTime.fromJSDate(date)),
+    capacity: vine.number().positive().withoutDecimals(),
+  })
+)
+
+export const updateEventValidator = vine.compile(
+  vine.object({
+    title: vine.string().minLength(1),
+    description: vine.string().minLength(1),
+    location: vine.string().minLength(1),
+    basePrice: vine.number().min(0),
+    currency: vine.string().minLength(3).maxLength(3),
+    startsAt: vine.date({ formats: "iso8601" }).transform((date) => DateTime.fromJSDate(date)),
+    endsAt: vine.date({ formats: "iso8601" }).afterField('startsAt').transform((date) => DateTime.fromJSDate(date)),
+    capacity: vine.number().positive().withoutDecimals(),
+  })
+)
