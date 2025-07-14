@@ -20,108 +20,129 @@ import FormSubmissionsController from '#modules/form-builder/controllers/FormSub
 import AdminsController from '#modules/admins/controllers/AdminController'
 import WaitlistController from '#modules/waitlist/controllers/WaitlistController'
 
-router.post('/admin/auth/login', [AdminAuthController, 'login']).use(
-  middleware.adminGuestOnly()
-)
-router.post('/admin/auth/logout', [AdminAuthController, 'logout']).use(middleware.auth({ guards: ['admin'] }))
+// Admin routes
+router.group(() => {
+  // Auth routes
+  router.group(() => {
+    router.post('/login', [AdminAuthController, 'login']).use(
+      middleware.adminGuestOnly()
+    )
+    router.post('/logout', [AdminAuthController, 'logout']).use(
+      middleware.auth({ guards: ['admin'] })
+    )
+  }).prefix("/auth")
 
-router.post('/auth/login', [UserAuthController, 'login']).use([middleware.guestOnly()])
-router.post('/auth/logout', [UserAuthController, 'logout']).use(middleware.auth({ guards: ['api'] }))
-router.post('/auth/register', [UserAuthController, 'register']).use([middleware.guestOnly()])
+  router.group(() => {
+    // Admin Management routes
+    router.group(() => {
+      router.get('/', [AdminsController, 'getAllAdmins'])
+      router.get('/:id', [AdminsController, 'getAdminById'])
+      router.post('/', [AdminsController, 'createAdmin'])
+      router.put('/:id', [AdminsController, 'updateAdmin'])
+      router.delete('/:id', [AdminsController, 'deleteAdmin'])
+    }).prefix("/admins").use(middleware.checkAdminAbility(["manage-admins"]))
 
-// Verification
-router
-  .get('/verify/new', [VerificationController, 'getVerification'])
-  .use(middleware.auth({ guards: ['api'] }))
-router
-  .post('/verify/', [VerificationController, 'verify'])
-  .as('verify')
+    // Tickets routes
+    router.group(() => {
+      router.post('/tickets', [TicketController, 'create'])
+      router.get('/tickets', [TicketController, 'getAll'])
+      router.get('/tickets/:id', [TicketController, 'getOne'])
+      router.put('/tickets/:id', [TicketController, 'updateOne'])
+      router.delete('/tickets/:id', [TicketController, 'deleteOne'])
+    }).prefix("/tickets").use(middleware.checkAdminAbility(["manage-events", "manage-tickets"]))
+
+    // Events routes
+    router.group(() => {
+      router.group(() => {
+        router.post('/', [EventController, 'create'])
+        router.delete('/:id', [EventController, 'delete'])
+      }).use([middleware.checkAdminAbility(["manage-events"])])
+
+      router.put('/:id', [EventController, 'update'])
+        .use([middleware.checkAdminAbility(["manage-events", "event-organizer"])])
+    }).prefix("/events")
+
+    // Forms routes
+    router.group(() => {
+      // Form management routes
+      router.post('/', [FormsController, 'create'])
+      router.put('/:id', [FormsController, 'update'])
+
+      // Form submissions routes
+      router.get('/:id/submissions', [FormSubmissionsController, 'submissions'])
+      router.get('/:id/export', [FormSubmissionsController, 'exportSubmissions'])
+      router.get('/:id/:submissionId', [FormSubmissionsController, 'submission'])
+    }).prefix("/forms")
+      .use([middleware.checkAdminAbility(["event-organizer", "manage-events"])])
+
+    router.post('/create-user', [AdminsController, 'createUser'])
+    router.post('/add-event', [AdminsController, 'addEvent'])
+    router.post('/add-money', [AdminsController, 'addMoney'])
+    router.post('/generate-ticket', [AdminsController, 'generateTicket'])
+  }).use(middleware.auth({ guards: ['admin'] }))
+}).prefix("/admin")
+
+// User Auth routes
+router.group(() => {
+  router.post('/login', [UserAuthController, 'login']).use([middleware.guestOnly()])
+  router.post('/logout', [UserAuthController, 'logout']).use(middleware.auth({ guards: ['api'] }))
+  router.post('/register', [UserAuthController, 'register']).use([middleware.guestOnly()])
+}).prefix("/auth")
+
+// Verification routes
+router.group(() => {
+  router.get('/new', [VerificationController, 'getVerification'])
+  router.post('/', [VerificationController, 'verify'])
+}).prefix("/verify")
   .use(middleware.auth({ guards: ['api'] }))
 
 // Reset password routes
-router.post('/password/forget', [UserAuthController, 'forgetPassword']).use([middleware.guestOnly()])
-router.post('/password/reset', [UserAuthController, 'resetPassword']).use([middleware.guestOnly()])
+router.group(() => {
+  router.post('/forget', [UserAuthController, 'forgetPassword'])
+  router.post('/reset', [UserAuthController, 'resetPassword'])
+}).prefix("/password")
+  .use([middleware.guestOnly()])
 
 // Wallet Routes
-router
-  .get('/wallet/balance', [WalletController, 'balance'])
-  .use([middleware.auth({ guards: ['api'] }), middleware.verification()])
-router
-  .post('/wallet/recharge', [WalletController, 'rechargeBalance'])
-  .use([middleware.auth({ guards: ['api'] }), middleware.verification()])
-router
-  .get('/wallet/transactions', [WalletController, 'transactions'])
-  .use([middleware.auth({ guards: ['api'] }), middleware.verification()])
-router
-  .get('/wallet/transaction/:id', [WalletController, 'transaction'])
-  .use([middleware.auth({ guards: ['api'] }), middleware.verification()])
-router
-  .post('/wallet/pay', [WalletController, 'makeTransaction'])
-  .use([middleware.auth({ guards: ['api'] }), middleware.verification()])
-
-router.post('/tickets', [TicketController, 'create'])
-router.get('/tickets', [TicketController, 'getAll'])
-router.get('/tickets/:id', [TicketController, 'getOne'])
-router.put('/tickets/:id', [TicketController, 'updateOne'])
-router.delete('/tickets/:id', [TicketController, 'deleteOne'])
-router.get('/tickets/user/:userId', [TicketController, 'userTickets'])
-router.get('/tickets/event/:eventId', [TicketController, 'eventTickets'])
-router.post('/tickets/bulk-checkin', [TicketController, 'bulkCheckIn'])
-
-// Form management routes
-router.post('forms/', [FormsController, 'create'])
-router.get('forms/:id', [FormsController, 'get'])
-router.put('forms/:id', [FormsController, 'update'])
-
-// Form submission route
-router.post('/forms/:id/submit', [FormSubmissionsController, 'submit'])
-
-// Form submissions routes
-router.get('forms/:id/submissions', [FormSubmissionsController, 'submissions'])
-router.get('forms/:id/export', [FormSubmissionsController, 'exportSubmissions'])
-router.get('forms/:id/:submissionId', [FormSubmissionsController, 'submission'])
-
-
-router.post('/events', [EventController, 'create'])
-  .use([
-    middleware.auth({ guards: ['api'] }),
-    middleware.role(['admin'])
-  ])
 router.group(() => {
-    router.get   ('/',       [EventController, 'getAll'])
-    router.get   ('/:id',    [EventController, 'getById'])
-    router.put   ('/:id',    [EventController, 'update'])
-    router.delete('/:id',    [EventController, 'delete'])
-  })
-  .prefix('/events')
+  router.get('/balance', [WalletController, 'balance'])
+  router.post('/recharge', [WalletController, 'rechargeBalance'])
+  router.get('/transactions', [WalletController, 'transactions'])
+  router.get('/transaction/:id', [WalletController, 'transaction'])
+  router.post('/pay', [WalletController, 'makeTransaction'])
+}).prefix("/wallet")
+  .use([middleware.auth({ guards: ['api'] }), middleware.verification()])
+
+// Tickets
+router.group(() => {
+  router.get('/tickets/user/:userId', [TicketController, 'userTickets'])
+  router.get('/tickets/event/:eventId', [TicketController, 'eventTickets'])
+  router.post('/tickets/bulk-checkin', [TicketController, 'bulkCheckIn'])
+}).prefix("/tickets")
+
+// Forms
+router.group(() => {
+  router.get('/:id', [FormsController, 'get'])
+  router.post('/:id/submit', [FormSubmissionsController, 'submit']).use(middleware.auth({ guards: ['api'] }))
+}).prefix("/forms")
+
+// Events routes
+router.group(() => {
+  router.get('/', [EventController, 'getAll'])
+  router.get('/:id', [EventController, 'getById'])
+}).prefix('/events')
+
+router.group(() => {
+  router.post('/subscribe', [WaitlistController, 'subscribe'])
+  router.post('/respond', [WaitlistController, 'respond'])
+  router.get('/my', [WaitlistController, 'myStatus'])
+}).prefix("waitlist")
   .use(middleware.auth({ guards: ['api'] }))
 
-router.get('/admin/', [AdminsController, 'getAllAdmins'])
-router.get('/admin/:id', [AdminsController, 'getAdminById'])
-router.post('/admin/', [AdminsController, 'createAdmin'])
-router.put('/admin/:id', [AdminsController, 'updateAdmin'])
-router.delete('/admin/:id', [AdminsController, 'deleteAdmin'])
-router.post('/admin/create-user', [AdminsController, 'createUser'])
-router.post('/admin/add-event', [AdminsController, 'addEvent'])
-router.post('/admin/add-money', [AdminsController, 'addMoney'])
-router.post('/admin/generate-ticket', [AdminsController, 'generateTicket'])
-
-
 router.group(() => {
-  router.post('/waitlist/subscribe', [WaitlistController, 'subscribe'])
-  router.post('/waitlist/respond',   [WaitlistController, 'respond'])
-  router.get ('/waitlist/my',        [WaitlistController, 'myStatus'])
-})
-.use(middleware.auth({ guards: ['api'] }))
-
-router.group(() => {
-
-    router.post('/lock',   [TicketController, 'lockSeat'])
-    router.post('/unlock', [TicketController, 'unlockSeat'])
-    router.post('/book',   [TicketController, 'bookSeat'])
-
-
-    router.get('/event/:eventId', [TicketController, 'getSeatsByEvent'])
-  })
-  .prefix('/seats')
+  router.post('/lock', [TicketController, 'lockSeat'])
+  router.post('/unlock', [TicketController, 'unlockSeat'])
+  router.post('/book', [TicketController, 'bookSeat'])
+  router.get('/event/:eventId', [TicketController, 'getSeatsByEvent'])
+}).prefix('/seats')
   .use(middleware.auth({ guards: ['api'] }))

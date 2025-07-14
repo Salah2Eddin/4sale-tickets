@@ -43,6 +43,7 @@ router.use([
  * the routes or the routes group.
  */
 export const middleware = router.named({
+  checkAdminAbility: () => import('#middleware/check_admin_ability_middleware'),
   auth: () => import('#middleware/auth_middleware'),
   role: () => import('#middleware/role_middleware'), // user role middleware
   verification: () => import('#middleware/verification_middleware'),
