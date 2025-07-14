@@ -2,6 +2,7 @@
 
 import type { HttpContext } from '@adonisjs/core/http'
 import AdminService from '#modules/admins/services/AdminService'
+import { addEventValidator, addMoneyValidator, createAdminValidator, createUserValidator, generateTicketValidator, updateAdminValidator } from '#modules/admins/validators/AdminValidators'
 
 export default class AdminsController {
   async getAllAdmins() {
@@ -13,12 +14,12 @@ export default class AdminsController {
   }
 
   async createAdmin({ request }: HttpContext) {
-    const data = request.only(['email', 'password', 'abilities'])
+    const data = await request.validateUsing(createAdminValidator)
     return AdminService.createAdmin(data)
   }
 
   async updateAdmin({ params, request }: HttpContext) {
-    const updates = request.only(['email', 'password', 'abilities'])
+    const updates = await request.validateUsing(updateAdminValidator)
     return AdminService.updateAdmin(params.id, updates)
   }
 
@@ -27,27 +28,22 @@ export default class AdminsController {
   }
 
   async createUser({ request }: HttpContext) {
-    const data = request.only(['email', 'password'])
+    const data = await request.validateUsing(createUserValidator)
     return AdminService.createUser(data)
   }
 
   async addEvent({ request }: HttpContext) {
-    const eventData = request.only(['title', 'description', 'startDate', 'endDate', 'organizerId'])
+    const eventData = await request.validateUsing(addEventValidator)
     return AdminService.addEvent(eventData)
   }
 
   async addMoney({ request }: HttpContext) {
-    const { userId, amount } = request.only(['userId', 'amount'])
+    const { userId, amount } = await request.validateUsing(addMoneyValidator)
     return AdminService.addMoneyToWallet(userId, amount)
   }
 
   async generateTicket({ request }: HttpContext) {
-    const { userId, eventId, seatId, ticketCount } = request.only([
-      'userId',
-      'eventId',
-      'seatId',
-      'ticketCount',
-    ])
+    const { userId, eventId, seatId, ticketCount } = await request.validateUsing(generateTicketValidator)
     return AdminService.generateTicketForUser(userId, eventId, seatId, ticketCount)
   }
 
