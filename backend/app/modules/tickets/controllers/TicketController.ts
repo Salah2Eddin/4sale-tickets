@@ -109,4 +109,21 @@ export default class TicketController {
     const seats = await SeatLockService.getSeatsForEvent(eventId)
     return response.ok(seats)
   }
+
+  public async buyTicket({ request, auth, response }: HttpContext) {
+    const user = auth.user!
+    const { eventId, tierId, currency } = request.only(['eventId', 'tierId', 'currency'])
+
+    const ticket = await TicketService.buyTicket(user.id, eventId, tierId, currency)
+    return response.created({ ticket })
+  }
+
+  public async resellTicket({ request, auth, response }: HttpContext) {
+    const seller = auth.user!
+    const { buyerId, ticketId, price } = request.only(['buyerId', 'ticketId', 'price'])
+
+    const ticket = await TicketService.resellTicket(seller.id, buyerId, ticketId, price)
+    return response.ok({ ticket })
+  }
+  
 }

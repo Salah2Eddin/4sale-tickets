@@ -115,9 +115,19 @@ router.group(() => {
 
 // Tickets
 router.group(() => {
-  router.get('/tickets/user/:userId', [TicketController, 'userTickets'])
-  router.get('/tickets/event/:eventId', [TicketController, 'eventTickets'])
-  router.post('/tickets/bulk-checkin', [TicketController, 'bulkCheckIn'])
+  router.get('/user/:userId', [TicketController, 'userTickets'])
+  router.get('/event/:eventId', [TicketController, 'eventTickets'])
+  router.post('/bulk-checkin', [TicketController, 'bulkCheckIn'])
+
+  router.group(()=>{
+    router.post('/buy', [TicketController, 'buyTicket'])
+  router.post('/resell', [TicketController, 'resellTicket'])
+  }).use([
+    middleware.auth({ guards: ['api'] }),
+    middleware.verification(),
+  ])
+
+
 }).prefix("/tickets")
 
 // Forms

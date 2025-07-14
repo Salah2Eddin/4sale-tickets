@@ -14,6 +14,8 @@ export default class EventController {
       organizerId: user.id,
     })
 
+    await EventService.createSeatsForEvent(event.id)
+
     return response.created(event)
   }
 

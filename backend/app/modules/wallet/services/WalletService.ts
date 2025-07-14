@@ -69,4 +69,14 @@ export default class WalletService {
   public static async getTransaction(transactionId: number): Promise<Transaction> {
     return await Transaction.findOrFail(transactionId)
   }
+
+
+public static async deduct(userId: number, amount: number): Promise<boolean> {
+  const wallet = await Wallet.findByOrFail({ userId })
+  if (wallet.balance < amount) return false
+
+  wallet.balance -= amount
+  await wallet.save()
+  return true
+}
 }
