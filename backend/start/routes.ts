@@ -9,7 +9,8 @@
 
 import router from '@adonisjs/core/services/router'
 import TicketController from '#modules/tickets/controllers/TicketController'
-import AuthController from '#modules/users/controllers/AuthController'
+import AdminAuthController from '#modules/admins/controllers/AuthController'
+import UserAuthController from '#modules/users/controllers/AuthController'
 import { middleware } from '#start/kernel'
 import WalletController from '#modules/wallet/controllers/WalletController'
 import VerificationController from '#modules/users/controllers/VerificationController'
@@ -19,9 +20,14 @@ import FormSubmissionsController from '#modules/form-builder/controllers/FormSub
 import AdminsController from '#modules/admins/controllers/AdminController'
 import WaitlistController from '#modules/waitlist/controllers/WaitlistController'
 
-router.post('/auth/login', [AuthController, 'login']).use([middleware.guestOnly()])
-router.post('/auth/logout', [AuthController, 'logout']).use(middleware.auth({ guards: ['api'] }))
-router.post('/auth/register', [AuthController, 'register']).use([middleware.guestOnly()])
+router.post('/admin/auth/login', [AdminAuthController, 'login']).use(
+  middleware.adminGuestOnly()
+)
+router.post('/admin/auth/logout', [AdminAuthController, 'logout']).use(middleware.auth({ guards: ['admin'] }))
+
+router.post('/auth/login', [UserAuthController, 'login']).use([middleware.guestOnly()])
+router.post('/auth/logout', [UserAuthController, 'logout']).use(middleware.auth({ guards: ['api'] }))
+router.post('/auth/register', [UserAuthController, 'register']).use([middleware.guestOnly()])
 
 // Verification
 router
@@ -33,8 +39,8 @@ router
   .use(middleware.auth({ guards: ['api'] }))
 
 // Reset password routes
-router.post('/password/forget', [AuthController, 'forgetPassword']).use([middleware.guestOnly()])
-router.post('/password/reset', [AuthController, 'resetPassword']).use([middleware.guestOnly()])
+router.post('/password/forget', [UserAuthController, 'forgetPassword']).use([middleware.guestOnly()])
+router.post('/password/reset', [UserAuthController, 'resetPassword']).use([middleware.guestOnly()])
 
 // Wallet Routes
 router

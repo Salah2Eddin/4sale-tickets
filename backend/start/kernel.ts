@@ -47,6 +47,7 @@ export const middleware = router.named({
   role: () => import('#middleware/role_middleware'), // user role middleware
   verification: () => import('#middleware/verification_middleware'),
   guestOnly: () => import('#middleware/guest_only_middleware'),
+  adminGuestOnly: () => import('#middleware/admin_guest_only_middleware'),
 })
 
 
