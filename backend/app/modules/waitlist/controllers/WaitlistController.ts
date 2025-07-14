@@ -2,13 +2,13 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Waitlist from '#modules/waitlist/models/Waitlist'
 import WaitlistService from '#modules/waitlist/services/WaitlistService'
+import { waitlistResponseValidator, waitlistSubscriptionValidator } from '../validators/WaitlistValidators.js'
 
 
 export default class WaitlistController {
- 
   public async subscribe ({ auth, request, response }: HttpContext) {
     const user   = auth.user!
-    const { eventId, tierId } = request.only(['eventId', 'tierId'])
+    const { eventId, tierId } = await request.validateUsing(waitlistSubscriptionValidator)
 
     // 1. Prevent duplicates
     const duplicate = await Waitlist.query()
@@ -35,7 +35,7 @@ export default class WaitlistController {
 
   public async respond ({ auth, request, response }: HttpContext) {
     const user = auth.user!
-    const { waitlistId, accept } = request.only(['waitlistId', 'accept'])
+    const { waitlistId, accept } = await request.validateUsing(waitlistResponseValidator)
 
     const entry = await Waitlist.find(waitlistId)
     if (!entry || entry.userId !== user.id) {
@@ -48,7 +48,6 @@ export default class WaitlistController {
     if (accept) {
       entry.status = 'bought'
       await entry.save()
-     
       return response.ok({ message: ' Finish checkout to buy your ticket.' })
     }
 
@@ -62,7 +61,7 @@ export default class WaitlistController {
     return response.ok({ message: 'Declined. You were removed from the queue.' })
   }
 
-  
+
   public async myStatus ({ auth, response }: HttpContext) {
     const user = auth.user!
     const entries = await Waitlist
