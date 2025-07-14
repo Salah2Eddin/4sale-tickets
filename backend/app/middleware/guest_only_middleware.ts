@@ -3,10 +3,9 @@ import type { NextFn } from '@adonisjs/core/types/http'
 
 export default class GuestOnlyMiddleware {
   async handle({auth, response}: HttpContext, next: NextFn) {
-    const user = auth.user
-
-    if (user){
-      return response.unauthorized("You already logged in")
+    await auth.use('api').check()
+    if (auth.isAuthenticated){
+      return response.forbidden("Already Logged In")
     }
 
     const output = await next()
