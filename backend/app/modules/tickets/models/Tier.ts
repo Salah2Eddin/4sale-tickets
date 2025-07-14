@@ -16,4 +16,10 @@ export default class Tier extends BaseModel {
 
   @hasMany(() => Seat)
   declare seats: HasMany<typeof Seat>
+
+  @column()
+  declare capacity: number
+
+  @column()
+  declare eventId: number
 }

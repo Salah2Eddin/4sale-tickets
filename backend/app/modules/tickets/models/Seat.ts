@@ -11,4 +11,10 @@ export default class Seat extends BaseModel {
 
   @belongsTo(() => Tier)
   declare tier: BelongsTo<typeof Tier>
+
+  @column()
+  declare eventId: number
+
+  @column()
+  declare isTaken: boolean
 }

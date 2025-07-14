@@ -19,6 +19,7 @@ import FormSubmissionsController from '#modules/form-builder/controllers/FormSub
 import AdminsController from '#modules/admins/controllers/AdminController'
 import WaitlistController from '#modules/waitlist/controllers/WaitlistController'
 
+
 router.post('/auth/login', [AuthController, 'login']).use([middleware.guestOnly()])
 router.post('/auth/logout', [AuthController, 'logout']).use(middleware.auth({ guards: ['api'] }))
 router.post('/auth/register', [AuthController, 'register']).use([middleware.guestOnly()])
@@ -61,6 +62,20 @@ router.delete('/tickets/:id', [TicketController, 'deleteOne'])
 router.get('/tickets/user/:userId', [TicketController, 'userTickets'])
 router.get('/tickets/event/:eventId', [TicketController, 'eventTickets'])
 router.post('/tickets/bulk-checkin', [TicketController, 'bulkCheckIn'])
+
+router
+  .post('/tickets/buy', [TicketController, 'buyTicket'])
+  .use([
+    middleware.auth({ guards: ['api'] }),
+    middleware.verification(),
+  ])
+
+  router
+  .post('/tickets/resell', [TicketController, 'resellTicket'])
+  .use([
+    middleware.auth({ guards: ['api'] }),
+    middleware.verification(),
+  ])
 
 // Form management routes
 router.post('forms/', [FormsController, 'create'])

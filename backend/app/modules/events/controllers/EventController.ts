@@ -16,8 +16,14 @@ export default class EventController {
         organizerId: user.id,
     })
 
+    await EventService.createSeatsForEvent(event.id)
+
     return response.created(event)
+
+    
     }
+
+    
 
     public async getAll({ response }: HttpContext) {
     const events = await EventService.getAll()

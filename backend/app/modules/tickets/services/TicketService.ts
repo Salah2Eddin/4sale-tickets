@@ -2,6 +2,8 @@ import User from '#modules/users/models/User'
 import Event from '#modules/events/models/Event'
 import Seat from '#modules/tickets/models/Seat'
 import Ticket from '#modules/tickets/models/Ticket'
+import WalletService from '#modules/wallet/services/WalletService'
+import CurrencyConverterService from '#modules/wallet/services/CurrencyConverterService'
 
 import { generateTicketQR } from '#modules/tickets/services/qrService'
 import { DateTime } from 'luxon'
@@ -12,13 +14,22 @@ export default class TicketService {
         return ticket.userId == userId
     }
 
-    static async createTicket(userId: number, eventId: number, seatId: number, ticketCount: number) {
+    static async createTicket(userId: number, eventId: number, tierId: number, ticketCount: number)
+ {
         const user = await User.find(userId)
         const event = await Event.find(eventId)
-        const seat = await Seat.find(seatId)
-    
-        if (!user || !event || !seat) {
+        if (!user || !event ) {
             throw new Error('Invalid user, event, or seat' )
+        }
+
+        const seat = await Seat.query()
+            .where('tier_id', tierId)
+            .where('event_id', eventId)
+            .where('is_taken', false)
+            .first()
+
+        if (!seat) {
+            throw new Error('No available seat for this tier')
         }
 
         await seat.load('tier')
@@ -32,11 +43,15 @@ export default class TicketService {
         const ticket = await Ticket.create({
             userId,
             eventId,
-            seatId,
+            seatId: seat.id,
             status: 'valid',
             checkedIn: false,
             price
         })
+
+        seat.isTaken = true
+        await seat.save()
+
 
         await generateTicketQR(ticket.id)
 
@@ -122,4 +137,65 @@ export default class TicketService {
 
         return result
     }
+
+    static async buyTicket(userId: number, eventId: number, tierId: number, currency: string) {
+    const user = await User.findOrFail(userId)
+    const event = await Event.findOrFail(eventId)
+
+    const seat = await Seat.query()
+        .where('tierId', tierId)
+        .whereNotExists((builder) => {
+        builder.from('tickets').whereRaw('tickets.seat_id = seats.id')
+        })
+        .first()
+
+    if (!seat) throw new Error('No available seats for this tier')
+
+    if (!user.isVerified) {
+    throw new Error('User is not verified')
+    }
+
+    await seat.load('tier')
+    let priceInEgp = seat.tier.price
+
+    priceInEgp = this.applyEarlyBird(priceInEgp, event)
+    priceInEgp = this.applyTimeBased(priceInEgp, event)
+
+    const finalPrice = await CurrencyConverterService.convert(priceInEgp, currency)
+
+    const success = await WalletService.deduct(userId, finalPrice)
+    if (!success) throw new Error('Insufficient balance')
+
+    const ticket = await Ticket.create({
+        userId,
+        eventId,
+        seatId: seat.id,
+        status: 'valid',
+        checkedIn: false,
+        price: finalPrice
+    })
+
+    await generateTicketQR(ticket.id)
+    return ticket
+    }
+
+    static async resellTicket(sellerId: number, buyerId: number, ticketId: number, price: number) {
+    const ticket = await Ticket.findOrFail(ticketId)
+
+    if (ticket.userId !== sellerId) {
+        throw new Error('Unauthorized: You do not own this ticket')
+    }
+
+    if (ticket.status !== 'valid') {
+        throw new Error('Ticket is not eligible for resale')
+    }
+
+    await WalletService.makeTransaction(buyerId, sellerId, price)
+
+    ticket.userId = buyerId
+    await ticket.save()
+
+    return ticket
+    }
+
 }
