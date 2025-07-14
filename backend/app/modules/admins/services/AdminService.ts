@@ -44,7 +44,6 @@ export default class AdminService {
     return User.create({
       email: data.email,
       password: await data.password,
-      isBanned: false,
     })
   }
 
@@ -64,25 +63,25 @@ export default class AdminService {
 
   static async generateTicketForUser(userId: number, eventId: number, seatId: number, ticketCount: number) {
     const user = await User.find(userId)
-    if (!user || user.isBanned) {
+    if (!user) {
       throw new Error('User not found or banned')
     }
     return TicketService.createTicket(userId, eventId, seatId, ticketCount)
   }
 
-  static async banUser(userId: number) {
-    const user = await User.find(userId)
-    if (!user) return null
-    user.isBanned = true
-    await user.save()
-    return user
-  }
+  // static async banUser(userId: number) {
+  //   const user = await User.find(userId)
+  //   if (!user) return null
+  //   user.isBanned = true
+  //   await user.save()
+  //   return user
+  // }
 
-  static async unbanUser(userId: number) {
-    const user = await User.find(userId)
-    if (!user) return null
-    user.isBanned = false
-    await user.save()
-    return user
-  }
+  // static async unbanUser(userId: number) {
+  //   const user = await User.find(userId)
+  //   if (!user) return null
+  //   user.isBanned = false
+  //   await user.save()
+  //   return user
+  //}
 }

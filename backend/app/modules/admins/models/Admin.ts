@@ -13,6 +13,9 @@ export default class Admin extends BaseModel {
   @column()
   declare isSuper: boolean
 
-  @column()
+  @column({
+    prepare: (value: string[]) => JSON.stringify(value),
+    consume: (value: string) => JSON.parse(value),
+  })
   declare abilities: string[]
 }
