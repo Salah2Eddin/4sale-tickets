@@ -19,6 +19,7 @@ import FormsController from '#modules/form-builder/controllers/FormsController'
 import FormSubmissionsController from '#modules/form-builder/controllers/FormSubmissionController'
 import AdminsController from '#modules/admins/controllers/AdminController'
 import WaitlistController from '#modules/waitlist/controllers/WaitlistController'
+import TierController from '#modules/tickets/controllers/TiersController'
 
 // Admin routes
 router.group(() => {
@@ -55,8 +56,19 @@ router.group(() => {
     router.group(() => {
       router.group(() => {
         router.post('/', [EventController, 'create'])
+        router.post('/organizer', [AdminsController, 'createEventOrganizer'])
         router.delete('/:id', [EventController, 'delete'])
       }).use([middleware.checkAdminAbility(["manage-events"])])
+
+      router.group(() => {
+        router.get('/:id/tiers', [TierController, 'index'])
+        router.group(() => {
+          router.post('/', [TierController, 'store'])
+          router.get('/:id', [TierController, 'show'])
+          router.put('/:id', [TierController, 'update'])
+          router.delete('/:id', [TierController, 'destroy'])
+        }).prefix("/tiers")
+      }).use([middleware.checkAdminAbility(["manage-events", "event-organizer"])])
 
       router.put('/:id', [EventController, 'update'])
         .use([middleware.checkAdminAbility(["manage-events", "event-organizer"])])
@@ -120,8 +132,7 @@ router.group(() => {
   router.post('/bulk-checkin', [TicketController, 'bulkCheckIn'])
 
   router.group(()=>{
-    router.post('/buy', [TicketController, 'buyTicket'])
-  router.post('/resell', [TicketController, 'resellTicket'])
+    router.post('/resell', [TicketController, 'resellTicket'])
   }).use([
     middleware.auth({ guards: ['api'] }),
     middleware.verification(),

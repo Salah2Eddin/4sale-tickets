@@ -8,8 +8,8 @@ export const createEventValidator = vine.compile(
     location: vine.string().minLength(1),
     basePrice: vine.number().min(0),
     currency: vine.string().minLength(3).maxLength(3),
-    startsAt: vine.date({ formats: "iso8601" }).transform((date) => DateTime.fromJSDate(date)),
-    endsAt: vine.date({ formats: "iso8601" }).afterField('startsAt').transform((date) => DateTime.fromJSDate(date)),
+    startsAt: vine.date().transform((date) => DateTime.fromJSDate(date)),
+    endsAt: vine.date().afterField('startsAt', {compare: "hours"}).transform((date) => DateTime.fromJSDate(date)),
     capacity: vine.number().positive().withoutDecimals(),
   })
 )
@@ -21,8 +21,8 @@ export const updateEventValidator = vine.compile(
     location: vine.string().minLength(1),
     basePrice: vine.number().min(0),
     currency: vine.string().minLength(3).maxLength(3),
-    startsAt: vine.date({ formats: "iso8601" }).transform((date) => DateTime.fromJSDate(date)),
-    endsAt: vine.date({ formats: "iso8601" }).afterField('startsAt').transform((date) => DateTime.fromJSDate(date)),
+    startsAt: vine.date().transform((date) => DateTime.fromJSDate(date)),
+    endsAt: vine.date().afterField('startsAt').transform((date) => DateTime.fromJSDate(date)),
     capacity: vine.number().positive().withoutDecimals(),
   })
 )

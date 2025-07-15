@@ -1,5 +1,12 @@
 import vine from '@vinejs/vine'
 
+export const createEventOrganizerValidator = vine.compile(
+  vine.object({
+    email: vine.string().email(),
+    password: vine.string().minLength(8)
+  })
+)
+
 export const createAdminValidator = vine.compile(
   vine.object({
     email: vine.string().email(),

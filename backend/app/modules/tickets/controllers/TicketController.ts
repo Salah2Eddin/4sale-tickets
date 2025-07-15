@@ -4,7 +4,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 
 import TicketService from '#modules/tickets/services/TicketService'
 import SeatLockService from '#modules/tickets/services/SeatLockService'
-import { bulkCheckInValidator, createTicketValidator, eventIdValidator, seatValidator, ticketIdValidator, updateTicketValidator, userIdValidator } from '#modules/tickets/validators/TicketValidators'
+import { bookSeatsValidator, bulkCheckInValidator, createTicketValidator, eventIdValidator, seatValidator, ticketIdValidator, updateTicketValidator, userIdValidator } from '#modules/tickets/validators/TicketValidators'
 
 export default class TicketController {
   public async create({ request, response }: HttpContext) {
@@ -82,25 +82,24 @@ export default class TicketController {
 
   public async lockSeat({ request, auth, response }: HttpContext) {
     const user = auth.user!
-    const { eventId, seatId } = await request.validateUsing(seatValidator)
+    const { seatId } = await request.validateUsing(seatValidator)
 
-    const seat = await SeatLockService.lockSeat(eventId, seatId, user.id)
+    const seat = await SeatLockService.lockSeat(seatId, user.id)
     return response.ok({ message: 'Seat locked', seat })
   }
 
   public async unlockSeat({ request, auth, response }: HttpContext) {
     const user = auth.user!
-    const { eventId, seatId } = await request.validateUsing(seatValidator)
+    const { seatId } = await request.validateUsing(seatValidator)
 
-    const seat = await SeatLockService.unlockSeat(eventId, seatId, user.id)
+    const seat = await SeatLockService.unlockSeat(seatId, user.id)
     return response.ok({ message: 'Seat unlocked', seat })
   }
 
   public async bookSeat({ request, auth, response }: HttpContext) {
-    const user = auth.user!
-    const { eventId, seatId } = await request.validateUsing(seatValidator)
+    const bookedSeats = await request.validateUsing(bookSeatsValidator)
 
-    const seat = await SeatLockService.bookSeat(eventId, seatId, user.id)
+    const seat = await SeatLockService.bookSeats(bookedSeats.seats, auth.user!.id)
     return response.ok({ message: 'Seat booked', seat })
   }
 
@@ -110,13 +109,13 @@ export default class TicketController {
     return response.ok(seats)
   }
 
-  public async buyTicket({ request, auth, response }: HttpContext) {
-    const user = auth.user!
-    const { eventId, tierId, currency } = request.only(['eventId', 'tierId', 'currency'])
+  // public async buyTicket({ request, auth, response }: HttpContext) {
+  //   const user = auth.user!
+  //   const { eventId, tierId, currency } = request.only(['eventId', 'tierId', 'currency'])
 
-    const ticket = await TicketService.buyTicket(user.id, eventId, tierId, currency)
-    return response.created({ ticket })
-  }
+  //   const ticket = await TicketService.buyTicket()
+  //   return response.created({ ticket })
+  // }
 
   public async resellTicket({ request, auth, response }: HttpContext) {
     const seller = auth.user!

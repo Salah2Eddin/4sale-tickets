@@ -1,20 +1,14 @@
 
 import type { HttpContext } from '@adonisjs/core/http'
 import EventService from '#modules/events/services/EventService'
-import { createEventValidator, updateEventValidator } from '../validators/EventValidators.js'
+import { createEventValidator, updateEventValidator } from '#modules/events/validators/EventValidators'
 
 export default class EventController {
-  public async create({ request, response, auth }: HttpContext) {
-    const user = auth.user!
-
+  public async create({ request, response}: HttpContext) {
     const payload = await request.validateUsing(createEventValidator)
 
-    const event = await EventService.create({
-      ...payload,
-      organizerId: user.id,
-    })
-
-    await EventService.createSeatsForEvent(event.id)
+    const event = await EventService.create(payload)
+    // await EventService.createSeatsForEvent(event.id)
 
     return response.created(event)
   }
@@ -36,10 +30,15 @@ export default class EventController {
 
   public async update({ request, response, auth, params }: HttpContext) {
     const user = auth.user!
+    
+    const isOwner = await EventService.isEventOrganizer(params.id, user.id)
+    if (!isOwner) {
+      return response.forbidden('You are not authorized to update this event')
+    }
 
     const updates = await request.validateUsing(updateEventValidator)
 
-    const updatedEvent = await EventService.update(params.id, updates, user)
+    const updatedEvent = await EventService.update(params.id, updates)
 
     if (!updatedEvent) {
       return response.notFound({ error: 'Event not found' })
@@ -51,7 +50,12 @@ export default class EventController {
   public async delete({ response, auth, params }: HttpContext) {
     const user = auth.user!
 
-    const deleted = await EventService.delete(params.id, user)
+    const isOwner = await EventService.isEventOrganizer(params.id, user.id)
+    if (!isOwner) {
+        return response.forbidden('You are not authorized to update this event')
+    }
+
+    const deleted = await EventService.delete(params.id)
 
     if (!deleted) {
       return response.notFound({ error: 'Event not found' })

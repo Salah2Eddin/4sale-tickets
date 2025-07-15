@@ -2,7 +2,7 @@
 
 import type { HttpContext } from '@adonisjs/core/http'
 import AdminService from '#modules/admins/services/AdminService'
-import { addEventValidator, addMoneyValidator, createAdminValidator, createUserValidator, generateTicketValidator, updateAdminValidator } from '#modules/admins/validators/AdminValidators'
+import { addEventValidator, addMoneyValidator, createAdminValidator, createEventOrganizerValidator, createUserValidator, generateTicketValidator, updateAdminValidator } from '#modules/admins/validators/AdminValidators'
 
 export default class AdminsController {
   async getAllAdmins() {
@@ -16,6 +16,11 @@ export default class AdminsController {
   async createAdmin({ request }: HttpContext) {
     const data = await request.validateUsing(createAdminValidator)
     return AdminService.createAdmin(data)
+  }
+
+  async createEventOrganizer({request}: HttpContext){
+    const payload = await request.validateUsing(createEventOrganizerValidator)
+    return AdminService.createAdmin({ ...payload, abilities: ['event-organizer'] })
   }
 
   async updateAdmin({ params, request }: HttpContext) {

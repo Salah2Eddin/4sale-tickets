@@ -1,6 +1,7 @@
 import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Tier from '#modules/tickets/models/Tier'
+import { SeatStatus } from '#contracts/tickets/enums/SeatStatus'
 
 export default class Seat extends BaseModel {
   @column({ isPrimary: true })
@@ -16,5 +17,5 @@ export default class Seat extends BaseModel {
   declare eventId: number
 
   @column()
-  declare isTaken: boolean
+  declare status: SeatStatus
 }

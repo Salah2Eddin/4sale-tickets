@@ -53,6 +53,17 @@ export const seatValidator = vine.compile(
   })
 )
 
+export const bookSeatsValidator = vine.compile(
+  vine.object({
+    seats: vine.array(
+      vine.object({
+        eventId: vine.number().positive().withoutDecimals(),
+        seatId: vine.number().positive().withoutDecimals(),
+      })
+    )
+  })
+)
+
 export const eventParamValidator = vine.compile(
   vine.object({
     eventId: vine.number().positive().withoutDecimals(),

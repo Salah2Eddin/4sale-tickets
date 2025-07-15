@@ -3,6 +3,8 @@ import Wallet from '#modules/wallet/models/Wallet'
 import Transaction from '#modules/wallet/models/Transaction'
 import InsufficientFundsException from '#exceptions/wallet/insufficient_funds_exception'
 
+export const SYSTEM_WALLET_ID = 5
+
 export default class WalletService {
   public static async make(userId: number): Promise<Wallet> {
     const wallet = await Wallet.create({
@@ -17,8 +19,13 @@ export default class WalletService {
     return wallet.balance
   }
 
-  public static async makeTransaction(fromUserId: number, toUserId: number, amount: number) {
-    const trx = await db.transaction()
+  public static async makeTransaction(fromUserId: number, toUserId: number, amount: number, options?:{client?:any}) {
+    let trx
+    if (options?.client) {
+      trx = await options.client.transaction()
+    } else {
+      trx = await db.transaction()
+    }
     try {
       const fromWallet = await Wallet.findByOrFail({ userId: fromUserId }, { client: trx })
       const toWallet = await Wallet.findByOrFail({ userId: toUserId }, { client: trx })
@@ -48,9 +55,8 @@ export default class WalletService {
   }
 
   public static async addBalance(walletId: number, amount: number) {
-    const SYSTEM_BALANCE_ID = 5
     const wallet = await Wallet.findOrFail(walletId)
-    await this.makeTransaction(SYSTEM_BALANCE_ID, wallet.userId, amount)
+    await this.makeTransaction(SYSTEM_WALLET_ID, wallet.userId, amount)
   }
 
   public static async getWalletTransactions(walletId: number): Promise<Transaction[]> {
