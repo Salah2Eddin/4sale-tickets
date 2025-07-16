@@ -34,8 +34,8 @@ export default class WalletService {
         throw new InsufficientFundsException()
       }
 
-      fromWallet.balance -= amount
-      toWallet.balance += amount
+      fromWallet.balance = Number(fromWallet.balance) - Number(amount)
+      toWallet.balance = Number(toWallet.balance) + Number(amount)
 
       await Transaction.create(
         {

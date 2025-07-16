@@ -132,8 +132,11 @@ router.group(() => {
   router.post('/bulk-checkin', [TicketController, 'bulkCheckIn'])
 
   router.group(()=>{
-    router.post('/resell', [TicketController, 'resellTicket'])
+  //  router.post('/resell', [TicketController, 'resellTicket'])
+    router.post('/resell/list', [TicketController, 'listForResell'])
+    router.post('/resell/buy', [TicketController, 'buyFromResell'])
     router.get('/refund/:id', [TicketController, 'refund'])
+    router.get('/resell', [TicketController,'getResell'])
   }).use([
     middleware.auth({ guards: ['api'] }),
     middleware.verification(),
@@ -142,13 +145,17 @@ router.group(() => {
 
 }).prefix("/tickets")
 
-// Forms
-router.group(() => {
-  router.get('/:id', [FormsController, 'get'])
-  router.post('/:id/submit', [FormSubmissionsController, 'submit']).use(middleware.auth({ guards: ['api'] }))
-}).prefix("/forms")
+// Form submissions routes
+router.get('forms/:id/submissions', [FormSubmissionsController, 'submissions'])
+router.get('forms/:id/export', [FormSubmissionsController, 'exportSubmissions'])
+router.get('forms/:id/:submissionId', [FormSubmissionsController, 'submission'])
 
-// Events routes
+
+router.post('/events', [EventController, 'create'])
+  .use([
+    middleware.auth({ guards: ['api'] }),
+    middleware.role(['admin'])
+  ])
 router.group(() => {
   router.get('/', [EventController, 'getAll'])
   router.get('/:id', [EventController, 'getById'])

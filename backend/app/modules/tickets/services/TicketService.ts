@@ -11,6 +11,8 @@ import { SeatStatus } from '#contracts/tickets/enums/SeatStatus'
 import { TicketStatus } from '#contracts/tickets/enums/TicketStatus'
 import WaitlistService from '#modules/waitlist/services/WaitlistService'
 
+import Resell from '#modules/tickets/models/Resell'
+
 export default class TicketService {
   static async validateTicketOwner(ticketId: number, userId: number): Promise<boolean> {
     const ticket = await Ticket.findOrFail(ticketId)
@@ -171,7 +173,26 @@ export default class TicketService {
     await WaitlistService.kickOff(ticket.eventId, ticket.seat.tierId)
   }
 
-  static async resellTicket(sellerId: number, buyerId: number, ticketId: number, price: number) {
+  // static async resellTicket(sellerId: number, buyerId: number, ticketId: number, price: number) {
+  //   const ticket = await Ticket.findOrFail(ticketId)
+
+  //   if (ticket.userId !== sellerId) {
+  //     throw new Error('Unauthorized: You do not own this ticket')
+  //   }
+
+  //   if (ticket.status !== 'booked') {
+  //     throw new Error('Ticket is not eligible for resale')
+  //   }
+
+  //   await WalletService.makeTransaction(sellerId, buyerId, price)
+
+  //   ticket.userId = buyerId
+  //   await ticket.save()
+
+  //   return ticket
+  // }
+
+  static async listForResell(sellerId: number, ticketId: number, price: number) {
     const ticket = await Ticket.findOrFail(ticketId)
 
     if (ticket.userId !== sellerId) {
@@ -179,14 +200,52 @@ export default class TicketService {
     }
 
     if (ticket.status !== 'booked') {
+      throw new Error('Only booked tickets can be listed')
+    }
+
+    const eventId = ticket.eventId
+    const seat = await Seat.findOrFail(ticket.seatId)
+    const tierId = seat.tierId
+
+    const resell = await Resell.create({
+      eventId,
+      ticketId,
+      tierId,
+      price
+    })
+
+    return resell
+  }
+
+  static async buyFromResell(buyerId: number, resellId: number) {
+    const resell = await Resell.findOrFail(resellId)
+    const ticket = await Ticket.findOrFail(resell.ticketId)
+
+    if (ticket.status !== 'booked') {
       throw new Error('Ticket is not eligible for resale')
     }
 
-    await WalletService.makeTransaction(sellerId, buyerId, price)
+    const sellerId = ticket.userId
+
+    await WalletService.makeTransaction(buyerId, sellerId, resell.price)
 
     ticket.userId = buyerId
     await ticket.save()
 
+    await resell.delete()
+
     return ticket
   }
+
+  static async getResell() {
+    const resellEntries = await Resell.query()
+      .preload('ticket', (ticketQuery) => {
+        ticketQuery.preload('event').preload('seat', (seatQuery) => {
+          seatQuery.preload('tier')
+        })
+      })
+
+    return resellEntries
+  }
+
 }

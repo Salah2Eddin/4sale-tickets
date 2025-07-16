@@ -126,12 +126,37 @@ export default class TicketController {
   //   return response.created({ ticket })
   // }
 
-  public async resellTicket({ request, auth, response }: HttpContext) {
-    const seller = auth.user!
-    const { buyerId, ticketId, price } = request.only(['buyerId', 'ticketId', 'price'])
+  // public async resellTicket({ request, auth, response }: HttpContext) {
+  //   const seller = auth.user!
+  //   const { buyerId, ticketId, price } = request.only(['buyerId', 'ticketId', 'price'])
 
-    const ticket = await TicketService.resellTicket(seller.id, buyerId, ticketId, price)
-    return response.ok({ ticket })
+  //   const ticket = await TicketService.resellTicket(seller.id, buyerId, ticketId, price)
+  //   return response.ok({ ticket })
+  // }
+
+    public async listForResell({ auth, request, response }: HttpContext) {
+    const seller = auth.user!
+    const { ticketId, price } = request.only(['ticketId', 'price'])
+
+    const resell = await TicketService.listForResell(seller.id, ticketId, price)
+    return response.ok({ message: 'Ticket listed for resell', resell })
+   
   }
+
+    public async buyFromResell({ auth, request, response }: HttpContext) {
+    const buyer = auth.user!
+    const { resellId } = request.only(['resellId'])
+
+    const ticket = await TicketService.buyFromResell(buyer.id, resellId)
+    return response.ok({ message: 'Ticket purchased from resell', ticket })
+   
+  }
+
+    public async getResell({ response }: HttpContext) {
+    const listings = await TicketService.getResell()
+    return response.ok(listings)
+  }
+
+
   
 }
