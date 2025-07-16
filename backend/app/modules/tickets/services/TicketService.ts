@@ -57,7 +57,7 @@ export default class TicketService {
 
     await ticket.save()
 
-    await generateTicketQR(ticket.id)
+    await generateTicketQR(ticket)
 
     return ticket
   }
