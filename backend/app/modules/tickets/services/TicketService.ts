@@ -63,16 +63,21 @@ export default class TicketService {
   }
 
   static applyEarlyBird(price: number, event: Event): number {
+    const DISCOUNT_PERC = 0.2
     const now = DateTime.now()
     const earlyBirdEnd = event.earlyBirdEndsAt
 
     if (earlyBirdEnd && now <= earlyBirdEnd) {
-      return price * 0.8 // 20% discount
+      return price * (1-DISCOUNT_PERC)
     }
     return price
   }
 
   static applyTimeBased(price: number, event: Event): number {
+    // increase 25% - 4 times
+    const NO_DISCOUNT_STEPS = 4
+    const DISCOUNT_PERC = 0.25
+
     const now = DateTime.now()
     const createdAt = event.createdAt
     const eventStart = event.startsAt
@@ -84,13 +89,16 @@ export default class TicketService {
 
     if (totalDuration <= 0 || elapsed <= 0) return price
 
-    const stepCount = Math.floor(elapsed / (totalDuration / 4)) // increase 25% - 4 times
-    return price * (1 + 0.25 * Math.min(stepCount, 4))
+    const stepCount = Math.floor(elapsed / (totalDuration / NO_DISCOUNT_STEPS))
+    return price * (1 + DISCOUNT_PERC * Math.min(stepCount, NO_DISCOUNT_STEPS))
   }
 
   static applyGroupDiscount(price: number, ticketCount: number): number {
-    const groupSize = Math.floor(ticketCount / 5)
-    return price * (1 - 0.15 * groupSize)
+    const MIN_GROUP_SIZE = 5
+    const DISCOUNT_PERC = 0.15
+    
+    const groupSize = Math.floor(ticketCount / MIN_GROUP_SIZE)
+    return price * (1 - DISCOUNT_PERC * groupSize)
   }
 
   static async getAllTickets() {
