@@ -3,11 +3,34 @@ import Waitlist from '#modules/waitlist/models/Waitlist'
 import User from '#modules/users/models/User'
 import mailservice from '#modules/shared/services/mail_service'
 import { DateTime } from 'luxon'
+import SeatLockService from '#modules/tickets/services/SeatLockService'
+import SeatService from '#modules/tickets/services/SeatService'
+import { SeatStatus } from '#contracts/tickets/enums/SeatStatus'
 
 
 const CLAIM_WINDOW_HOURS = 12
 
 export default class WaitlistService {
+  public static async checkAlreadySubscribed(userId: number, eventId: number, tierId: number ){
+    const duplicate = await Waitlist.query()
+      .where('user_id', userId)
+      .where('event_id', eventId)
+      .where('tier_id', tierId )
+      .first()
+
+    return duplicate !== null
+  }
+
+  public static async subscribe(userId: number, eventId: number, tierId: number|null){
+    const entry = await Waitlist.create({
+      userId:  userId,
+      eventId: eventId,
+      tierId:  tierId,
+      status:  'waiting',
+      createdAt: DateTime.now()
+    })
+    return entry
+  }
   
   public static async notifyNextUser (
     eventId: number,
@@ -86,5 +109,18 @@ const next = await query.orderBy('created_at', 'asc').first()
   public static async kickOff (eventId: number, tierId: number | null) {
     await this.cycleExpired()
     await this.notifyNextUser(eventId, tierId)
+  }
+
+  public static async accept(entry: Waitlist){
+    entry.status = 'bought'
+    const seat = await SeatService.getSeatBy({eventId: entry.eventId, tierId:entry.tierId, status:SeatStatus.AVAILABLE})
+    SeatLockService.bookSeats([{eventId:entry.eventId, seatId:seat.id}], entry.userId)
+    await entry.save()
+  }
+
+  public static async decline(entry:Waitlist){
+    entry.status = 'declined'
+    await entry.save()
+    await WaitlistService.notifyNextUser(entry.eventId, entry.tierId)
   }
 }

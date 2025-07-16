@@ -2,7 +2,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Waitlist from '#modules/waitlist/models/Waitlist'
 import WaitlistService from '#modules/waitlist/services/WaitlistService'
-import { waitlistResponseValidator, waitlistSubscriptionValidator } from '../validators/WaitlistValidators.js'
+import { waitlistResponseValidator, waitlistSubscriptionValidator } from '#modules/waitlist/validators/WaitlistValidators'
 
 
 export default class WaitlistController {
@@ -10,25 +10,12 @@ export default class WaitlistController {
     const user   = auth.user!
     const { eventId, tierId } = await request.validateUsing(waitlistSubscriptionValidator)
 
-    // 1. Prevent duplicates
-    const duplicate = await Waitlist.query()
-      .where('user_id', user.id)
-      .where('event_id', eventId)
-      .where('tier_id', tierId )
-      .first()
-
+    const duplicate = await WaitlistService.checkAlreadySubscribed(user.id, eventId, tierId)
     if (duplicate) {
       return response.badRequest({ message: 'Already on this waitlist' })
     }
 
-    // 2. Create entry
-    const entry = await Waitlist.create({
-      userId:  user.id,
-      eventId,
-      tierId:  tierId ?? null,
-      status:  'waiting',
-    })
-
+    const entry = WaitlistService.subscribe(user.id, eventId, tierId)
     return response.created(entry)
   }
 
@@ -39,28 +26,20 @@ export default class WaitlistController {
 
     const entry = await Waitlist.find(waitlistId)
     if (!entry || entry.userId !== user.id) {
-      return response.forbidden({ message: 'Invalid waitlist entry' })
+      return response.badRequest({ message: "Not your waitlist entry" })
     }
     if (entry.status !== 'notified') {
       return response.badRequest({ message: 'Entry not in notified state' })
     }
 
-    if (accept) {
-      entry.status = 'bought'
-      await entry.save()
-      return response.ok({ message: ' Finish checkout to buy your ticket.' })
+    if (!accept) {
+      WaitlistService.decline(entry)
+      return response.ok({ message: 'Declined. You were removed from the queue.' })
     }
 
-    // decline → mark declined & notify next user
-    entry.status = 'declined'
-    await entry.save()
-    if (entry.tierId !== null) {
-      await WaitlistService.notifyNextUser(entry.eventId, entry.tierId)
-    }
-
-    return response.ok({ message: 'Declined. You were removed from the queue.' })
+    WaitlistService.accept(entry)
+    return response.ok({ message: 'You successfully bought the ticket.' })
   }
-
 
   public async myStatus ({ auth, response }: HttpContext) {
     const user = auth.user!

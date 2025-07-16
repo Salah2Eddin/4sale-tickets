@@ -1,5 +1,5 @@
 import Tier from "#modules/tickets/models/Tier"
-import Seat from "../models/Seat.js"
+import Seat from "#modules/tickets/models/Seat"
 
 export default class SeatService {
     static async createEventSeats(eventId: number) {
@@ -25,5 +25,9 @@ export default class SeatService {
             })
         }
         await Seat.createMany(seatData)
+    }
+
+    static async getSeatBy(filters: Record<string, any>){
+        return await Seat.findByOrFail(filters)
     }
 }

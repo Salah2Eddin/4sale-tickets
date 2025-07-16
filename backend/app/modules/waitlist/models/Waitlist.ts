@@ -13,6 +13,7 @@ export default class Waitlist extends BaseModel {
   @column() declare status: 'waiting' | 'notified' | 'expired' | 'declined' | 'bought'
   @column.dateTime() declare notifiedAt: DateTime | null
   @column.dateTime() declare expiresAt: DateTime | null
+  @column.dateTime() declare createdAt: DateTime | null
 
   @belongsTo(() => User)  declare user:  BelongsTo<typeof User>
   @belongsTo(() => Event) declare event: BelongsTo<typeof Event>
