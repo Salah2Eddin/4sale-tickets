@@ -1,3 +1,4 @@
+import { errors as lucidErrors } from '@adonisjs/lucid'
 import app from '@adonisjs/core/services/app'
 import { HttpContext, ExceptionHandler } from '@adonisjs/core/http'
 
@@ -13,6 +14,9 @@ export default class HttpExceptionHandler extends ExceptionHandler {
    * response to the client
    */
   async handle(error: unknown, ctx: HttpContext) {
+    if(error instanceof lucidErrors.E_ROW_NOT_FOUND){
+      return ctx.response.notFound()
+    }
     return super.handle(error, ctx)
   }
 
