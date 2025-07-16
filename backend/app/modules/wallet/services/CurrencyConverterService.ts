@@ -15,6 +15,6 @@ export default class CurrencyConverterService {
 
     if (!rate) throw new Error(`No exchange rate found for ${to}`)
 
-    return amount * rate
+    return amount/rate
   }
 }

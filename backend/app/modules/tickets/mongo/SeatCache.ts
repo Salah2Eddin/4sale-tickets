@@ -1,9 +1,10 @@
+import { SeatStatus } from '#contracts/tickets/enums/SeatStatus'
 import { Schema, model, Document } from 'mongoose'
 
 export interface SeatCacheDocument extends Document {
     eventId: number
     seatId: number
-    status: 'available' | 'locked' | 'booked'
+    status: SeatStatus,
     lockedBy: number | null
     lockedAt: Date | null
 }
@@ -11,7 +12,7 @@ export interface SeatCacheDocument extends Document {
 const SeatCacheSchema = new Schema<SeatCacheDocument>({
     eventId: { type: Number, required: true },
     seatId: { type: Number, required: true },
-    status: { type: String, enum: ['available', 'locked', 'booked'], default: 'available' },
+    status: { type: String, enum: Object.values(SeatStatus), default: SeatStatus.AVAILABLE },
     lockedBy: { type: Number, default: null },
     lockedAt: { type: Date, default: null },
 }, {

@@ -1,106 +1,86 @@
 
 import SeatCacheModel from '#modules/tickets/mongo/SeatCache'
-import Ticket from '#modules/tickets/models/Ticket'
 import Seat from '#modules/tickets/models/Seat'
+import { SeatStatus } from '#contracts/tickets/enums/SeatStatus'
+import db from '@adonisjs/lucid/services/db'
+import mongoose from 'mongoose'
+
+import TicketService from '#modules/tickets/services/TicketService'
+
 
 export default class SeatLockService {
   static async releaseExpiredLocks() {
-    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000)
-
-    await SeatCacheModel.updateMany(
+    const lockDuration = /*2*60*1000*/ 5*1000
+    const startOfDuration = new Date(Date.now() - lockDuration)
+    await SeatCacheModel.deleteMany(
       {
-        status: 'locked',
-        lockedAt: { $lt: twoMinutesAgo },
-      },
-      {
-        $set: {
-          status: 'available',
-          lockedBy: null,
-          lockedAt: null,
-        },
+        lockedAt: { $lt: startOfDuration },
       }
     )
   }
 
-  static async lockSeat(eventId: number, seatId: number, userId: number) {
+  static async lockSeat(seatId: number, userId: number) {
     await this.releaseExpiredLocks()
 
-    const seat = await SeatCacheModel.findOne({ eventId, seatId })
+    const seat = await Seat.findOrFail(seatId)
 
-    if (!seat) {
-      throw new Error('Seat not found')
-    }
-
-    if (seat.status === 'booked') {
+    if (seat.status !== SeatStatus.AVAILABLE) {
       throw new Error('Seat already booked')
     }
 
-    if (seat.status === 'locked') {
-      throw new Error('Seat is currently locked')
-    }
-
-    seat.status = 'locked'
-    seat.lockedBy = userId
-    seat.lockedAt = new Date()
-    await seat.save()
-
-    return seat
-  }
-
-  static async unlockSeat(eventId: number, seatId: number, userId: number) {
-    const seat = await SeatCacheModel.findOne({ eventId, seatId })
-
-    if (!seat) {
-      throw new Error('Seat not found')
-    }
-
-    if (seat.status !== 'locked' || seat.lockedBy !== userId) {
-      throw new Error('You do not have permission to unlock this seat')
-    }
-
-    seat.status = 'available'
-    seat.lockedBy = null
-    seat.lockedAt = null
-    await seat.save()
-
-    return seat
-  }
-
-  static async bookSeat(eventId: number, seatId: number, userId: number) {
-    await this.releaseExpiredLocks()
-
-    const seat = await SeatCacheModel.findOne({ eventId, seatId })
-    if (!seat) throw new Error('Seat not found')
-
-    if (seat.status !== 'locked' || seat.lockedBy !== userId) {
-      throw new Error('Seat must be locked by you before booking')
-    }
-
-    seat.status = 'booked'
-    seat.lockedBy = null
-    seat.lockedAt = null
-    await seat.save()
-
-    const seatInSql = await Seat.find(seatId)
-    if (!seatInSql) throw new Error('Seat does not exist in MySQL')
-
-    const ticket = await Ticket.create({
-      userId,
-      eventId,
-      seatId,
-      status: 'valid',
-      checkedIn: false,
+    const seatMongo = await SeatCacheModel.create({
+      eventId: seat.eventId,
+      seatId: seat.id,
+      status: SeatStatus.LOCKED,
+      lockedBy: userId,
+      lockedAt: new Date(),
     })
+    return seatMongo
+  }
 
-    return {
-      seat,
-      ticket,
+  static async unlockSeat(seatId: number, userId: number) {
+    const seatMongo = await SeatCacheModel.findOneAndDelete({seatId:seatId, lockedBy: userId})
+    return seatMongo
+  }
+
+  static async bookSeats(bookedSeats : {eventId: number, seatId: number}[],  userId: number) {
+    const trx = await db.transaction()
+    const session = await mongoose.startSession()
+    try {
+      session.startTransaction()
+      await Promise.all(
+        bookedSeats.map(async (bookedSeat) => {
+          await SeatCacheModel.findOneAndDelete({seatId: bookedSeat.seatId})
+          await TicketService.createTicket(
+            userId,
+            bookedSeat.eventId,
+            bookedSeat.seatId,
+            bookedSeats.length,
+            {client:trx}
+          )
+          await Seat.query({client: trx}).where('id', bookedSeat.seatId).update('status', SeatStatus.BOOKED)
+        })
+      )
+      trx.commit()
+      session.commitTransaction()
+    } catch (error) {
+      trx.rollback()
+      session.abortTransaction()
+      throw error
     }
   }
 
   static async getSeatsForEvent(eventId: number) {
     await this.releaseExpiredLocks()
+    const seats = (await Seat.findManyBy({ eventId: eventId })).reduce((acc, seat) => {
+      acc[seat.id] = {id: seat.id, status:seat.status}
+      return acc
+    }, {} as Record<number, {id:number, status:SeatStatus}>)
 
-    return SeatCacheModel.find({ eventId })
+    const lockedSeats = await SeatCacheModel.find({ eventId: eventId })
+    lockedSeats.forEach((seat) => {
+      seats[seat.seatId].status = SeatStatus.LOCKED
+    })
+    return Object.values(seats)
   }
 }

@@ -9,7 +9,16 @@ export default class Tier extends BaseModel {
   declare id: number
 
   @column()
+  declare name: string
+
+  @column()
   declare price: number
+
+  @column()
+  declare capacity: number
+
+  @column()
+  declare eventId: number
 
   @hasMany(() => TierDiscount)
   declare discounts: HasMany<typeof TierDiscount>

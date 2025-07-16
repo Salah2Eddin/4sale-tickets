@@ -1,10 +1,10 @@
 import { BaseModel, column, belongsTo, hasOne, hasMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasOne, HasMany } from '@adonisjs/lucid/types/relations'
-import User from '#modules/users/models/User'
 import Waitlist from '#modules/waitlist/models/Waitlist'
 import Ticket from '#modules/tickets/models/Ticket'
 import { DateTime } from 'luxon'
 import Form from '#modules/form-builder/models/Form'
+import Admin from '#modules/admins/models/Admin'
 
 export default class Event extends BaseModel {
   @column({ isPrimary: true })
@@ -52,8 +52,8 @@ export default class Event extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 
-  @belongsTo(() => User, { foreignKey: 'organizerId' })
-  declare organizer: BelongsTo<typeof User>
+  @belongsTo(() => Admin, { foreignKey: 'organizerId' })
+  declare organizer: BelongsTo<typeof Admin>
 
   @hasOne(() => Waitlist)
   declare waitlist: HasOne<typeof Waitlist>
