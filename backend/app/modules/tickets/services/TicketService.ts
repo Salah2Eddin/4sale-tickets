@@ -34,7 +34,7 @@ export default class TicketService {
     await seat.load('tier')
     const basePrice = seat.tier.price
 
-    let price = basePrice
+    let price = await CurrencyConverterService.convert(basePrice, event.currency)
     price = this.applyEarlyBird(price, event)
     price = this.applyTimeBased(price, event)
     price = this.applyGroupDiscount(price, ticketCount)
@@ -57,7 +57,7 @@ export default class TicketService {
 
     await ticket.save()
     
-    // await generateTicketQR(ticket.id)
+    await generateTicketQR(ticket.id)
 
     return ticket
   }
