@@ -78,6 +78,15 @@ export default class TicketController {
 
     return response.ok({ updated: updatedTickets })
   }
+
+  public async refund({params, response}: HttpContext){
+    const ticket = await TicketService.getTicketById(params.id)
+    if(!ticket){
+      return response.notFound()
+    }
+    await TicketService.refundTicket(ticket)
+    return response.ok({message:"refunded ticket"})
+  }
   //seats
 
   public async lockSeat({ request, auth, response }: HttpContext) {

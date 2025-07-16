@@ -9,6 +9,7 @@ import { generateTicketQR } from '#modules/tickets/services/qrService'
 import { DateTime } from 'luxon'
 import { SeatStatus } from '#contracts/tickets/enums/SeatStatus'
 import { TicketStatus } from '#contracts/tickets/enums/TicketStatus'
+import WaitlistService from '#modules/waitlist/services/WaitlistService'
 
 export default class TicketService {
   static async validateTicketOwner(ticketId: number, userId: number): Promise<boolean> {
@@ -155,6 +156,19 @@ export default class TicketService {
   static async buyTicket(ticket: Ticket, options?: { client?: any }) {
     await WalletService.makeTransaction(ticket.userId, SYSTEM_WALLET_ID, ticket.price, options)
     // return true
+  }
+
+  static async refundTicket(ticket: Ticket, options?:{client?:any}){
+    await ticket.load("seat")
+
+    await WalletService.makeTransaction(SYSTEM_WALLET_ID, ticket.userId, ticket.price, options)
+    ticket.status = TicketStatus.REFUNDED
+    ticket.seat.status = SeatStatus.AVAILABLE
+    
+    await ticket.save()
+    await ticket.seat.save()
+    
+    await WaitlistService.kickOff(ticket.eventId, ticket.seat.tierId)
   }
 
   static async resellTicket(sellerId: number, buyerId: number, ticketId: number, price: number) {
