@@ -3,9 +3,9 @@ import { promises as fs } from 'fs'
 import path from 'path'
 
 export async function generateTicketQR(ticketId: number): Promise<string> {
-  const url = `http://${process.env.DB_HOST}:${process.env.DB_PORT}/tickets/${ticketId}`
+  const url = JSON.stringify({id: ticketId})
 
-  const outputDir = path.resolve(__dirname, '../../../../public/qrcodes')
+  const outputDir = path.resolve('./public/qrcodes')
   await fs.mkdir(outputDir, { recursive: true })
 
   const filePath = path.join(outputDir, `ticket-${ticketId}.png`)
