@@ -80,7 +80,15 @@ export default class SeatLockService {
 
   static async getSeatsForEvent(eventId: number) {
     await this.releaseExpiredLocks()
+    const seats = (await Seat.findManyBy({ eventId: eventId })).reduce((acc, seat) => {
+      acc[seat.id] = seat
+      return acc
+    }, {} as Record<number, Seat>)
 
-    return SeatCacheModel.find({ eventId })
+    const lockedSeats = await SeatCacheModel.find({ eventId: eventId })
+    lockedSeats.forEach((seat) => {
+      seats[seat.seatId].status = SeatStatus.LOCKED
+    })
+    return Object.values(seats)
   }
 }
