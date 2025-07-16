@@ -10,19 +10,11 @@ import TicketService from '#modules/tickets/services/TicketService'
 
 export default class SeatLockService {
   static async releaseExpiredLocks() {
-    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000)
-
-    await SeatCacheModel.updateMany(
+    const lockDuration = /*2*60*1000*/ 5*1000
+    const startOfDuration = new Date(Date.now() - lockDuration)
+    await SeatCacheModel.deleteMany(
       {
-        status: 'locked',
-        lockedAt: { $lt: twoMinutesAgo },
-      },
-      {
-        $set: {
-          status: 'available',
-          lockedBy: null,
-          lockedAt: null,
-        },
+        lockedAt: { $lt: startOfDuration },
       }
     )
   }
@@ -81,9 +73,9 @@ export default class SeatLockService {
   static async getSeatsForEvent(eventId: number) {
     await this.releaseExpiredLocks()
     const seats = (await Seat.findManyBy({ eventId: eventId })).reduce((acc, seat) => {
-      acc[seat.id] = seat
+      acc[seat.id] = {id: seat.id, status:seat.status}
       return acc
-    }, {} as Record<number, Seat>)
+    }, {} as Record<number, {id:number, status:SeatStatus}>)
 
     const lockedSeats = await SeatCacheModel.find({ eventId: eventId })
     lockedSeats.forEach((seat) => {
