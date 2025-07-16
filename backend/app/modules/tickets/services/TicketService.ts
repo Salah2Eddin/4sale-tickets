@@ -21,7 +21,7 @@ export default class TicketService {
     eventId: number,
     seatId: number,
     ticketCount: number,
-    options?: {client?: any}
+    options?: { client?: any }
   ) {
     await User.findOrFail(userId)
     const event = await Event.findOrFail(eventId)
@@ -34,15 +34,15 @@ export default class TicketService {
     await seat.load('tier')
     const basePrice = seat.tier.price
 
-    let price = await CurrencyConverterService.convert(basePrice, event.currency)
-    price = this.applyEarlyBird(price, event)
-    price = this.applyTimeBased(price, event)
-    price = this.applyGroupDiscount(price, ticketCount)
-
     const ticket = new Ticket()
     if (options?.client) {
       ticket.useTransaction(options.client)
     }
+
+    let price = await CurrencyConverterService.convert(basePrice, event.currency)
+    price = this.applyEarlyBird(price, event)
+    price = this.applyTimeBased(price, event)
+    price = this.applyGroupDiscount(price, ticketCount)
 
     ticket.merge({
       userId: userId,
@@ -56,7 +56,7 @@ export default class TicketService {
     await this.buyTicket(ticket)
 
     await ticket.save()
-    
+
     await generateTicketQR(ticket.id)
 
     return ticket
@@ -68,7 +68,8 @@ export default class TicketService {
     const earlyBirdEnd = event.earlyBirdEndsAt
 
     if (earlyBirdEnd && now <= earlyBirdEnd) {
-      return price * (1-DISCOUNT_PERC)
+      const newPrice = price * (1 - DISCOUNT_PERC)
+      return newPrice
     }
     return price
   }
@@ -90,15 +91,17 @@ export default class TicketService {
     if (totalDuration <= 0 || elapsed <= 0) return price
 
     const stepCount = Math.floor(elapsed / (totalDuration / NO_DISCOUNT_STEPS))
-    return price * (1 + DISCOUNT_PERC * Math.min(stepCount, NO_DISCOUNT_STEPS))
+    const newPrice = price * (1 + DISCOUNT_PERC * Math.min(stepCount, NO_DISCOUNT_STEPS))
+    return newPrice
   }
 
   static applyGroupDiscount(price: number, ticketCount: number): number {
     const MIN_GROUP_SIZE = 5
     const DISCOUNT_PERC = 0.15
-    
+
     const groupSize = Math.floor(ticketCount / MIN_GROUP_SIZE)
-    return price * (1 - DISCOUNT_PERC * groupSize)
+    const newPrice = price * (1 - DISCOUNT_PERC * groupSize)
+    return newPrice
   }
 
   static async getAllTickets() {
@@ -149,11 +152,8 @@ export default class TicketService {
     return result
   }
 
-  static async buyTicket(ticket: Ticket, options?: {client?: any}) {
-    const event = await Event.findOrFail(ticket.eventId)
-    const currency = event.currency
-    const priceInEgp = await CurrencyConverterService.convert(ticket.price, currency)
-    await WalletService.makeTransaction(ticket.userId, SYSTEM_WALLET_ID, priceInEgp, options)
+  static async buyTicket(ticket: Ticket, options?: { client?: any }) {
+    await WalletService.makeTransaction(ticket.userId, SYSTEM_WALLET_ID, ticket.price, options)
     // return true
   }
 
