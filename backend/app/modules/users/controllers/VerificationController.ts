@@ -2,6 +2,7 @@ import { HttpContext } from '@adonisjs/core/http'
 import VerificationService from '#modules/users/services/VerificationService'
 import UserService from '#modules/users/services/UserService'
 import { verificationRequestValidator } from '#modules/users/validators/VerificationValidators'
+import { errors as lucidErrors } from '@adonisjs/lucid'
 
 export default class VerificationController {
   async getVerification({ auth, response }: HttpContext) {
@@ -15,15 +16,23 @@ export default class VerificationController {
 
   async verify({ request, auth, response }: HttpContext) {
     const { code } = await verificationRequestValidator.validate(request.all())
-    const token = await VerificationService.getToken(code)
-    const user = await auth.user!
+    let token
+    try{
+    token = await VerificationService.getToken(code)}
+    catch(error){
+      if(! (error instanceof lucidErrors.E_ROW_NOT_FOUND)){
+        throw error
+      }
+      return response.badRequest()
+    }
+    const user = auth.user!
     if (!VerificationService.isValidToken(user.id, token)) {
       return response.status(400).send({
         code: 'E_INVALID_TOKEN',
         message: 'The verification token is invalid or has expired.',
       })
     }
-    await UserService.verifyUser(user)
+    await UserService.verifyUser(user.id)
     await VerificationService.deleteToken(token)
     return response.ok({
       message: 'Verification successful',

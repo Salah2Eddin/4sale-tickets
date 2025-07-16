@@ -1,5 +1,4 @@
 import MailService from '#modules/shared/services/mail_service'
-import User from '#modules/users/models/User'
 import VerificationToken from '#modules/users/models/VerificationToken'
 import { randomBytes } from 'crypto'
 import { DateTime } from 'luxon'
