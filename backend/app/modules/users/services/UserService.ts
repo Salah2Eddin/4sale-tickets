@@ -23,9 +23,8 @@ export default class UserService {
     })
   }
 
-  static async verifyUser(user: User) {
-    user.isVerified = true
-    await user.save()
+  static async verifyUser(userId: number) {
+    await User.query().where({id: userId}).update({isVerified: true})
   }
 
   static async getUserFromEmail(email: string) {
