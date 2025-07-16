@@ -178,11 +178,11 @@ export default class TicketService {
       throw new Error('Unauthorized: You do not own this ticket')
     }
 
-    if (ticket.status !== 'valid') {
+    if (ticket.status !== 'booked') {
       throw new Error('Ticket is not eligible for resale')
     }
 
-    await WalletService.makeTransaction(buyerId, sellerId, price)
+    await WalletService.makeTransaction(sellerId, buyerId, price)
 
     ticket.userId = buyerId
     await ticket.save()
