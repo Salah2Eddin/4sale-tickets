@@ -11,7 +11,7 @@ export const createEventValidator = vine.compile(
     currency: vine.string().minLength(3).maxLength(3),
     startsAt: vine.date().transform((date) => DateTime.fromJSDate(date)),
     endsAt: vine.date().afterField('startsAt', {compare: "hours"}).transform((date) => DateTime.fromJSDate(date)),
-    earlyBirdEndsAt: vine.date().afterField('startsAt', {compare: "hours"}).transform((date) => DateTime.fromJSDate(date)),
+    earlyBirdEndsAt: vine.date().transform((date) => DateTime.fromJSDate(date)),
     capacity: vine.number().positive().withoutDecimals(),
   })
 )
@@ -26,7 +26,7 @@ export const updateEventValidator = vine.compile(
     currency: vine.string().minLength(3).maxLength(3),
     startsAt: vine.date().transform((date) => DateTime.fromJSDate(date)),
     endsAt: vine.date().afterField('startsAt').transform((date) => DateTime.fromJSDate(date)),
-    earlyBirdEndsAt: vine.date().afterField('startsAt', {compare: "hours"}).transform((date) => DateTime.fromJSDate(date)),
+    earlyBirdEndsAt: vine.date().transform((date) => DateTime.fromJSDate(date)),
     capacity: vine.number().positive().withoutDecimals(),
   })
 )
