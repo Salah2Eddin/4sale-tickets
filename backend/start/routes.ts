@@ -145,17 +145,13 @@ router.group(() => {
 
 }).prefix("/tickets")
 
-// Form submissions routes
-router.get('forms/:id/submissions', [FormSubmissionsController, 'submissions'])
-router.get('forms/:id/export', [FormSubmissionsController, 'exportSubmissions'])
-router.get('forms/:id/:submissionId', [FormSubmissionsController, 'submission'])
+// Forms
+router.group(() => {
+  router.get('/:id', [FormsController, 'get'])
+  router.post('/:id/submit', [FormSubmissionsController, 'submit']).use(middleware.auth({ guards: ['api'] }))
+}).prefix("/forms")
 
-
-router.post('/events', [EventController, 'create'])
-  .use([
-    middleware.auth({ guards: ['api'] }),
-    middleware.role(['admin'])
-  ])
+// Events routes
 router.group(() => {
   router.get('/', [EventController, 'getAll'])
   router.get('/:id', [EventController, 'getById'])

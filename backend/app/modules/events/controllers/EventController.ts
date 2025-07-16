@@ -10,8 +10,6 @@ export default class EventController {
     const event = await EventService.create(payload)
     // await EventService.createSeatsForEvent(event.id)
 
-    await EventService.createSeatsForEvent(event.id)
-
     return response.created(event)
   }
 
