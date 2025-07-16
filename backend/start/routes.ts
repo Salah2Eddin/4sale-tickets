@@ -133,6 +133,7 @@ router.group(() => {
 
   router.group(()=>{
     router.post('/resell', [TicketController, 'resellTicket'])
+    router.get('/refund/:id', [TicketController, 'refund'])
   }).use([
     middleware.auth({ guards: ['api'] }),
     middleware.verification(),
