@@ -1,4 +1,4 @@
-import MailService from '#modules/shared/services/mail_service'
+import { sendMail } from '#modules/shared/services/mail_service'
 import VerificationToken from '#modules/users/models/VerificationToken'
 import { randomBytes } from 'crypto'
 import { DateTime } from 'luxon'
@@ -36,7 +36,7 @@ export default class VerificationService {
   }
 
   static sendTokenToUser(email: string, token: VerificationToken) {
-    MailService.send(email, '4Sale Tickets Verification token', [
+    sendMail(email, '4Sale Tickets Verification token', [
       'Your verification token is:',
       token.value,
     ])

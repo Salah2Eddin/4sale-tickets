@@ -1,5 +1,5 @@
 import AutoUpgrade from "#modules/auto-upgrade/models/AutoUpgrade";
-import mailservice from "#modules/shared/services/mail_service";
+import sendMail from "#modules/shared/services/mail_service";
 import TicketService from "#modules/tickets/services/TicketService";
 import TierService from "#modules/tickets/services/TierService";
 import SeatService from "#modules/tickets/services/SeatService";
@@ -34,7 +34,7 @@ export default class AutoUpgradeService {
                         .preload('seat', async (seatQuery) => seatQuery.preload("tier"))
                 })
         await Promise.all(autoUpgrades.map(async (autoUpgrade) => {
-            await mailservice.send(autoUpgrade.ticket.user.email,
+            await sendMail(autoUpgrade.ticket.user.email,
                 "An upgrade for your ticket is available",
                 ["The ticket with the follwoing info:",
                     `Event: ${autoUpgrade.ticket.event.title}`,

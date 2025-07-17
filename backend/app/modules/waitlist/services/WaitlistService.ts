@@ -1,7 +1,7 @@
 
 import Waitlist from '#modules/waitlist/models/Waitlist'
 import User from '#modules/users/models/User'
-import mailservice from '#modules/shared/services/mail_service'
+import { sendMail } from '#modules/shared/services/mail_service'
 import { DateTime } from 'luxon'
 import SeatLockService from '#modules/tickets/services/SeatLockService'
 import SeatService from '#modules/tickets/services/SeatService'
@@ -60,7 +60,7 @@ const next = await query.orderBy('created_at', 'asc').first()
     const receiver = await User.find(next.userId)
 
     if (receiver) {
-      await mailservice.send(
+      await sendMail(
         receiver.email,
         '🎟️ Ticket available!',
         [
