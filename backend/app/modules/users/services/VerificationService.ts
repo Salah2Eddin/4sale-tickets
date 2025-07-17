@@ -24,10 +24,7 @@ export default class VerificationService {
     return await VerificationToken.findByOrFail({ value: tokenValue })
   }
 
-  static isValidToken(userId: number, token: VerificationToken): boolean {
-    if (this.isTokenExpired(token)) {
-      return false
-    }
+  static isTokenBelongsToUser(userId: number, token: VerificationToken): boolean {
     return token.userId == userId
   }
 
