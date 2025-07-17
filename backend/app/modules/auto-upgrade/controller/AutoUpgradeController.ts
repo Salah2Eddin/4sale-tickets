@@ -10,6 +10,7 @@ export default class AutoUpgradeController {
         await AutoUpgradeService.subscribe(ticketId, targetTierId)
         return response.ok({ message: "Subscribed" })
     }
+    
     public async upgrade({ request, response }: HttpContext) {
         const { ticketId, seatId } = await request.validateUsing(upgradeValidator)
         await AutoUpgradeService.upgrade(ticketId, seatId)

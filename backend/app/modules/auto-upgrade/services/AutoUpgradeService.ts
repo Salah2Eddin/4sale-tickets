@@ -57,6 +57,9 @@ export default class AutoUpgradeService {
                 { seatId: seatId },
                 { client: trx }
             )
+            await AutoUpgrade.query()
+                .where({ ticketId: ticketId })
+                .delete()
         } catch (error) {
             trx.rollback()
             throw error
