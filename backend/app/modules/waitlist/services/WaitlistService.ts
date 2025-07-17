@@ -6,6 +6,7 @@ import { DateTime } from 'luxon'
 import SeatLockService from '#modules/tickets/services/SeatLockService'
 import SeatService from '#modules/tickets/services/SeatService'
 import { SeatStatus } from '#contracts/tickets/enums/SeatStatus'
+import AutoUpgradeService from '#modules/auto-upgrade/services/AutoUpgradeService'
 
 
 const CLAIM_WINDOW_HOURS = 12
@@ -106,9 +107,13 @@ const next = await query.orderBy('created_at', 'asc').first()
   }
 
   /** Call after a ticket refund / upgrade to start the next notification cycle */
-  public static async kickOff (eventId: number, tierId: number | null) {
+  public static async kickOff (eventId: number, tierId: number) {
     await this.cycleExpired()
-    await this.notifyNextUser(eventId, tierId)
+    const notified = await this.notifyNextUser(eventId, tierId)
+    if(notified === null){
+      const seat = await SeatService.getSeatBy({eventId: eventId, tierId:tierId, status:SeatStatus.AVAILABLE})
+      AutoUpgradeService.notify(tierId, seat.id)
+    }
   }
 
   public static async accept(entry: Waitlist){
