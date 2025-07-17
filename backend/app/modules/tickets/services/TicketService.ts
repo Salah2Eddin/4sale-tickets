@@ -1,5 +1,4 @@
-import User from '#modules/users/models/User'
-import Event from '#modules/events/models/Event'
+
 import Seat from '#modules/tickets/models/Seat'
 import Ticket from '#modules/tickets/models/Ticket'
 import WalletService, { SYSTEM_WALLET_ID } from '#modules/wallet/services/WalletService'
@@ -12,6 +11,7 @@ import { TicketStatus } from '#contracts/tickets/enums/TicketStatus'
 import WaitlistService from '#modules/waitlist/services/WaitlistService'
 
 import Resell from '#modules/tickets/models/Resell'
+import EventService from '#modules/events/services/EventService'
 
 export default class TicketService {
   static async validateTicketOwner(ticketId: number, userId: number): Promise<boolean> {
@@ -26,8 +26,7 @@ export default class TicketService {
     ticketCount: number,
     options?: { client?: any }
   ) {
-    await User.findOrFail(userId)
-    const event = await Event.findOrFail(eventId)
+    const event = await EventService.getById(eventId)
 
     const seat = await Seat.query(options)
       .where('id', seatId)
@@ -37,58 +36,57 @@ export default class TicketService {
     await seat.load('tier')
     const basePrice = seat.tier.price
 
-    const ticket = new Ticket()
-    if (options?.client) {
-      ticket.useTransaction(options.client)
-    }
+    let price = await CurrencyConverterService.convert(basePrice, event!.currency)
+    price = this.applyDiscounts(price, event!, ticketCount)
 
-    let price = await CurrencyConverterService.convert(basePrice, event.currency)
-    price = this.applyEarlyBird(price, event)
-    price = this.applyTimeBased(price, event)
-    price = this.applyGroupDiscount(price, ticketCount)
-
-    ticket.merge({
+    const ticket = await Ticket.create({
       userId: userId,
       eventId: eventId,
       seatId: seat.id,
       status: TicketStatus.BOOKED,
       checkedIn: false,
       price: price,
-    })
+    }, options)
 
-    await this.buyTicket(ticket)
-
-    await ticket.save()
+    this.buyTicket(ticket, options)
 
     await generateTicketQR(ticket)
 
     return ticket
   }
 
-  static applyEarlyBird(price: number, event: Event): number {
+  static applyDiscounts(price: number, eventData: { 
+    earlyBirdEndsAt: DateTime,
+    createdAt: DateTime,
+    startsAt: DateTime,
+  }, ticketCount: number) {
+    price = this.applyEarlyBird(price, eventData.earlyBirdEndsAt)
+    price = this.applyTimeBased(price, eventData.createdAt, eventData.startsAt)
+    price = this.applyGroupDiscount(price, ticketCount)
+    return price
+  }
+
+  static applyEarlyBird(price: number, earlyBirdEndsAt: DateTime): number {
     const DISCOUNT_PERC = 0.2
     const now = DateTime.now()
-    const earlyBirdEnd = event.earlyBirdEndsAt
 
-    if (earlyBirdEnd && now <= earlyBirdEnd) {
+    if (earlyBirdEndsAt && now <= earlyBirdEndsAt) {
       const newPrice = price * (1 - DISCOUNT_PERC)
       return newPrice
     }
     return price
   }
 
-  static applyTimeBased(price: number, event: Event): number {
+  static applyTimeBased(price: number, createdAt:DateTime, startsAt: DateTime): number {
     // increase 25% - 4 times
     const NO_DISCOUNT_STEPS = 4
     const DISCOUNT_PERC = 0.25
 
     const now = DateTime.now()
-    const createdAt = event.createdAt
-    const eventStart = event.startsAt
 
-    if (!createdAt || !eventStart || now <= createdAt) return price
+    if (!createdAt || !startsAt || now <= createdAt) return price
 
-    const totalDuration = eventStart.diff(createdAt, 'days').days
+    const totalDuration = startsAt.diff(createdAt, 'days').days
     const elapsed = now.diff(createdAt, 'days').days
 
     if (totalDuration <= 0 || elapsed <= 0) return price
@@ -172,25 +170,6 @@ export default class TicketService {
     
     await WaitlistService.kickOff(ticket.eventId, ticket.seat.tierId)
   }
-
-  // static async resellTicket(sellerId: number, buyerId: number, ticketId: number, price: number) {
-  //   const ticket = await Ticket.findOrFail(ticketId)
-
-  //   if (ticket.userId !== sellerId) {
-  //     throw new Error('Unauthorized: You do not own this ticket')
-  //   }
-
-  //   if (ticket.status !== 'booked') {
-  //     throw new Error('Ticket is not eligible for resale')
-  //   }
-
-  //   await WalletService.makeTransaction(sellerId, buyerId, price)
-
-  //   ticket.userId = buyerId
-  //   await ticket.save()
-
-  //   return ticket
-  // }
 
   static async listForResell(sellerId: number, ticketId: number, price: number) {
     const ticket = await Ticket.findOrFail(ticketId)

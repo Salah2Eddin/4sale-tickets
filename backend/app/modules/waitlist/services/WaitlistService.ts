@@ -1,6 +1,5 @@
 
 import Waitlist from '#modules/waitlist/models/Waitlist'
-import User from '#modules/users/models/User'
 import { sendMail } from '#modules/shared/services/mail_service'
 import { DateTime } from 'luxon'
 import SeatLockService from '#modules/tickets/services/SeatLockService'
@@ -49,7 +48,7 @@ if (tierId === null) {
 
 const next = await query.orderBy('created_at', 'asc').first()
     if (!next) return null
-
+    next.load("user")
     // update entry
     next.status     = 'notified'
     next.notifiedAt = DateTime.utc()
@@ -57,7 +56,7 @@ const next = await query.orderBy('created_at', 'asc').first()
     await next.save()
 
     // fetch user
-    const receiver = await User.find(next.userId)
+    const receiver = next.user
 
     if (receiver) {
       await sendMail(

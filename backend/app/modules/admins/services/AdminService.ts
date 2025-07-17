@@ -1,11 +1,11 @@
 'use strict'
 
 import Admin from '#modules/admins/models/Admin'
-import User from '#modules/users/models/User'
-import Event from '#modules/events/models/Event'
-import Wallet from '#modules/wallet/models/Wallet'
-import TicketService from '#modules/tickets/services/TicketService'
 import { DateTime } from 'luxon'
+import UserService from '#modules/users/services/UserService'
+import TicketService from '#modules/tickets/services/TicketService'
+import EventService from '#modules/events/services/EventService'
+import WalletService from '#modules/wallet/services/WalletService'
 
 export default class AdminService {
   static async createAdmin(data: { email: string; password: string; abilities: string[] }) {
@@ -40,48 +40,25 @@ export default class AdminService {
     return true
   }
 
-  static async createUser(data: { email: string; password: string }) {
-    return User.create({
-      email: data.email,
-      password: await data.password,
-    })
+  static async createUser(data: { username: string, email: string; password: string }) {
+    return UserService.createUser(data.username, data.email, data.password)
   }
 
-  static async addEvent(data: Partial<Event>) {
-    return Event.create({
-      ...data,
-      createdAt: DateTime.now(),
-    })
+  static async addEvent(data: Record<string, any>) {
+    return await EventService.create(
+      {
+        ...data,
+        createdAt: DateTime.now(),
+      }
+    )
   }
 
   static async addMoneyToWallet(userId: number, amount: number) {
-    const wallet = await Wallet.findByOrFail('user_id', userId)
-    wallet.balance += amount
-    await wallet.save()
-    return wallet
+    const wallet = await WalletService.getUserWallet(userId)
+    return await WalletService.addBalance(wallet!.id, amount)
   }
 
   static async generateTicketForUser(userId: number, eventId: number, seatId: number, ticketCount: number) {
-    const user = await User.find(userId)
-    if (!user) {
-      throw new Error('User not found or banned')
-    }
     return TicketService.createTicket(userId, eventId, seatId, ticketCount)
   }
-
-  // static async banUser(userId: number) {
-  //   const user = await User.find(userId)
-  //   if (!user) return null
-  //   user.isBanned = true
-  //   await user.save()
-  //   return user
-  // }
-
-  // static async unbanUser(userId: number) {
-  //   const user = await User.find(userId)
-  //   if (!user) return null
-  //   user.isBanned = false
-  //   await user.save()
-  //   return user
-  //}
 }
