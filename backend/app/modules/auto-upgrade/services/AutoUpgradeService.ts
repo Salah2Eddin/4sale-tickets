@@ -3,6 +3,9 @@ import mailservice from "#modules/shared/services/mail_service";
 import TicketService from "#modules/tickets/services/TicketService";
 import TierService from "#modules/tickets/services/TierService";
 import SeatService from "#modules/tickets/services/SeatService";
+import { SeatStatus } from "#contracts/tickets/enums/SeatStatus";
+import db from "@adonisjs/lucid/services/db";
+import WaitlistService from "#modules/waitlist/services/WaitlistService";
 
 export default class AutoUpgradeService {
     static async subscribe(ticketId: number, targetTierId: number) {
@@ -14,7 +17,7 @@ export default class AutoUpgradeService {
 
     static async notify(tierId: number, seatId: number) {
         const newTier = await TierService.getTier(tierId)
-        const newSeat = await SeatService.getSeatBy({id: seatId})
+        const newSeat = await SeatService.getSeatBy({ id: seatId })
         const autoUpgrades = await AutoUpgrade
             .query()
             .where({ tierId: tierId })
@@ -41,8 +44,22 @@ export default class AutoUpgradeService {
     }
 
     static async upgrade(ticketId: number, seatId: number) {
-        await TicketService.updateTicket(ticketId,
-            { seatId: seatId }
-        )
+        const ticket = await TicketService.getTicketById(ticketId)
+        const trx = await db.transaction()
+        try {
+            await SeatService.updateSeat(
+                { seatId: ticket!.seat },
+                { status: SeatStatus.AVAILABLE },
+                { client: trx }
+            )
+            await WaitlistService.kickOff(ticket!.eventId, ticket!.seatId)
+            await TicketService.updateTicket(ticketId,
+                { seatId: seatId },
+                { client: trx }
+            )
+        } catch (error) {
+            trx.rollback()
+            throw error
+        }
     }
 }

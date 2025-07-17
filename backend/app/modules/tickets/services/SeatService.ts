@@ -30,4 +30,7 @@ export default class SeatService {
     static async getSeatBy(filters: Record<string, any>){
         return await Seat.findByOrFail(filters)
     }
+    static async updateSeat(filters: Record<string, any>, data: Partial<Seat>, options?:{client?:any}){
+        return await Seat.query(options).where(filters).update(data)
+    }
 }

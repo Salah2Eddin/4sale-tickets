@@ -115,8 +115,8 @@ export default class TicketService {
     return Ticket.find(id)
   }
 
-  static async updateTicket(id: number, data: Partial<Ticket>) {
-    const ticket = await Ticket.find(id)
+  static async updateTicket(id: number, data: Partial<Ticket>, options?:{client?:any}) {
+    const ticket = await Ticket.find(id, options)
     if (!ticket) return null
     ticket.merge(data)
     await ticket.save()
