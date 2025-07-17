@@ -48,8 +48,6 @@ export default class TicketService {
       price: price,
     }, options)
 
-    this.buyTicket(ticket, options)
-
     await generateTicketQR(ticket)
 
     return ticket
@@ -155,7 +153,6 @@ export default class TicketService {
 
   static async buyTicket(ticket: Ticket, options?: { client?: any }) {
     await WalletService.makeTransaction(ticket.userId, SYSTEM_WALLET_ID, ticket.price, options)
-    // return true
   }
 
   static async refundTicket(ticket: Ticket, options?:{client?:any}){

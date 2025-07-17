@@ -51,14 +51,20 @@ export default class SeatLockService {
       await Promise.all(
         bookedSeats.map(async (bookedSeat) => {
           await SeatCacheModel.findOneAndDelete({seatId: bookedSeat.seatId})
-          await TicketService.createTicket(
+          const ticket = await TicketService.createTicket(
             userId,
             bookedSeat.eventId,
             bookedSeat.seatId,
             bookedSeats.length,
             {client:trx}
           )
-          await Seat.query({client: trx}).where('id', bookedSeat.seatId).update('status', SeatStatus.BOOKED)
+          await TicketService.buyTicket(
+            ticket,
+            { client: trx }
+          )
+          await Seat.query({ client: trx })
+            .where('id', bookedSeat.seatId)
+            .update('status', SeatStatus.BOOKED)
         })
       )
       trx.commit()
