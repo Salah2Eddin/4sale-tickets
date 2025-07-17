@@ -9,10 +9,4 @@ export const rechargeValidator = vine.compile(
         amount: amountValidatorExpression
     })
 )
-export const transactionValidator = vine.compile(
-  vine.object({
-    to: idValidatorExpression,
-    amount: amountValidatorExpression
-  })
-)
 
