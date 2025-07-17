@@ -8,6 +8,11 @@ import db from "@adonisjs/lucid/services/db";
 import WaitlistService from "#modules/waitlist/services/WaitlistService";
 
 export default class AutoUpgradeService {
+    static async checkAlreadySubscibed(ticketId: number) {
+        const found = await AutoUpgrade.findBy({ ticketId: ticketId })
+        return found !== null
+    }
+
     static async subscribe(ticketId: number, targetTierId: number) {
         await AutoUpgrade.create({
             ticketId: ticketId,
@@ -23,7 +28,10 @@ export default class AutoUpgradeService {
             .where({ tierId: tierId })
             .preload("ticket",
                 (ticketQuery) => {
-                    ticketQuery.preload('user').preload('event').preload('seat', async (seatQuery) => seatQuery.preload("tier"))
+                    ticketQuery
+                        .preload('user')
+                        .preload('event')
+                        .preload('seat', async (seatQuery) => seatQuery.preload("tier"))
                 })
         await Promise.all(autoUpgrades.map(async (autoUpgrade) => {
             await mailservice.send(autoUpgrade.ticket.user.email,
