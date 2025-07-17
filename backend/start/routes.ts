@@ -20,6 +20,7 @@ import FormSubmissionsController from '#modules/form-builder/controllers/FormSub
 import AdminsController from '#modules/admins/controllers/AdminController'
 import WaitlistController from '#modules/waitlist/controllers/WaitlistController'
 import TierController from '#modules/tickets/controllers/TiersController'
+import AutoUpgradeController from '#modules/auto-upgrade/controller/AutoUpgradeController'
 
 // Admin routes
 router.group(() => {
@@ -131,12 +132,17 @@ router.group(() => {
   router.get('/event/:eventId', [TicketController, 'eventTickets'])
   router.post('/bulk-checkin', [TicketController, 'bulkCheckIn'])
 
-  router.group(()=>{
-  //  router.post('/resell', [TicketController, 'resellTicket'])
+  router.group(() => {
+    //  router.post('/resell', [TicketController, 'resellTicket'])
     router.post('/resell/list', [TicketController, 'listForResell'])
     router.post('/resell/buy', [TicketController, 'buyFromResell'])
     router.get('/refund/:id', [TicketController, 'refund'])
-    router.get('/resell', [TicketController,'getResell'])
+    router.get('/resell', [TicketController, 'getResell'])
+
+    router.group(() => {
+      router.post("/", [AutoUpgradeController, 'upgrade'])
+      router.post("/subscribe", [AutoUpgradeController, 'subscribe'])
+    }).prefix('/upgrade')
   }).use([
     middleware.auth({ guards: ['api'] }),
     middleware.verification(),
