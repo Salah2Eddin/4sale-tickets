@@ -118,6 +118,7 @@ const next = await query.orderBy('created_at', 'asc').first()
   public static async accept(entry: Waitlist){
     entry.status = 'bought'
     const seat = await SeatService.getSeatBy({eventId: entry.eventId, tierId:entry.tierId, status:SeatStatus.AVAILABLE})
+    SeatLockService.lockSeat(seat.id, entry.userId)
     SeatLockService.bookSeats([{eventId:entry.eventId, seatId:seat.id}], entry.userId)
     await entry.save()
   }
