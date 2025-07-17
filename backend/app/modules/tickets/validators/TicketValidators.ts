@@ -60,7 +60,8 @@ export const bookSeatsValidator = vine.compile(
         eventId: vine.number().positive().withoutDecimals(),
         seatId: vine.number().positive().withoutDecimals(),
       })
-    )
+    ),
+    affliateCode: vine.string().minLength(8).maxLength(8).optional()
   })
 )
 

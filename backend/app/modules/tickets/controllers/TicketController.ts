@@ -106,9 +106,9 @@ export default class TicketController {
   }
 
   public async bookSeat({ request, auth, response }: HttpContext) {
-    const bookedSeats = await request.validateUsing(bookSeatsValidator)
+    const {seats, affliateCode} = await request.validateUsing(bookSeatsValidator)
 
-    const seat = await SeatLockService.bookSeats(bookedSeats.seats, auth.user!.id)
+    const seat = await SeatLockService.bookSeats(seats, auth.user!.id, affliateCode)
     return response.ok({ message: 'Seat booked', seat })
   }
 
@@ -140,7 +140,7 @@ export default class TicketController {
 
     const resell = await TicketService.listForResell(seller.id, ticketId, price)
     return response.ok({ message: 'Ticket listed for resell', resell })
-   
+
   }
 
     public async buyFromResell({ auth, request, response }: HttpContext) {
@@ -149,7 +149,7 @@ export default class TicketController {
 
     const ticket = await TicketService.buyFromResell(buyer.id, resellId)
     return response.ok({ message: 'Ticket purchased from resell', ticket })
-   
+
   }
 
     public async getResell({ response }: HttpContext) {
@@ -158,5 +158,5 @@ export default class TicketController {
   }
 
 
-  
+
 }

@@ -43,7 +43,7 @@ export default class SeatLockService {
     return seatMongo
   }
 
-  static async bookSeats(bookedSeats : {eventId: number, seatId: number}[],  userId: number) {
+  static async bookSeats(bookedSeats : {eventId: number, seatId: number}[],  userId: number, affliateCode?:string) {
     const trx = await db.transaction()
     const session = await mongoose.startSession()
     try {
@@ -56,6 +56,7 @@ export default class SeatLockService {
             bookedSeat.eventId,
             bookedSeat.seatId,
             bookedSeats.length,
+            affliateCode,
             {client:trx}
           )
           await Seat.query({client: trx}).where('id', bookedSeat.seatId).update('status', SeatStatus.BOOKED)

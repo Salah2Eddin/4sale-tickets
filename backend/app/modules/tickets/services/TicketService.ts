@@ -12,6 +12,7 @@ import { TicketStatus } from '#contracts/tickets/enums/TicketStatus'
 import WaitlistService from '#modules/waitlist/services/WaitlistService'
 
 import Resell from '#modules/tickets/models/Resell'
+import AffiliateService from '#modules/affliates/services/AffliateService'
 
 export default class TicketService {
   static async validateTicketOwner(ticketId: number, userId: number): Promise<boolean> {
@@ -24,6 +25,7 @@ export default class TicketService {
     eventId: number,
     seatId: number,
     ticketCount: number,
+    affliateCode?: string,
     options?: { client?: any }
   ) {
     await User.findOrFail(userId)
@@ -57,6 +59,10 @@ export default class TicketService {
     })
 
     await this.buyTicket(ticket)
+
+    if(affliateCode){
+      AffiliateService.applyComission(ticket.price, affliateCode)
+    }
 
     await ticket.save()
 
@@ -166,10 +172,10 @@ export default class TicketService {
     await WalletService.makeTransaction(SYSTEM_WALLET_ID, ticket.userId, ticket.price, options)
     ticket.status = TicketStatus.REFUNDED
     ticket.seat.status = SeatStatus.AVAILABLE
-    
+
     await ticket.save()
     await ticket.seat.save()
-    
+
     await WaitlistService.kickOff(ticket.eventId, ticket.seat.tierId)
   }
 
