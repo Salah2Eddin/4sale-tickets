@@ -1,5 +1,5 @@
 import AutoUpgrade from "#modules/auto-upgrade/models/AutoUpgrade";
-import sendMail from "#modules/shared/services/mail_service";
+import { sendMail } from "#modules/shared/services/mail_service";
 import TicketService from "#modules/tickets/services/TicketService";
 import TierService from "#modules/tickets/services/TierService";
 import SeatService from "#modules/tickets/services/SeatService";
