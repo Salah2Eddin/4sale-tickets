@@ -59,6 +59,9 @@ export const bookSeatsValidator = vine.compile(
       vine.object({
         eventId: vine.number().positive().withoutDecimals(),
         seatId: vine.number().positive().withoutDecimals(),
+        autoUpgrade: vine.object({
+          targetTierId: vine.number().positive().withoutDecimals()
+        }).optional()
       })
     )
   })
