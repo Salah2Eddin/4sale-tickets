@@ -3,7 +3,7 @@ import mail from '@adonisjs/mail/services/main'
 
 export default class mailservice {
   static async send(to: string, subject: string, content: string[]) {
-    // not working for some reason!
+    
 
     await mail.send((message) => {
       message
