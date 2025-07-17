@@ -56,14 +56,33 @@ export default class AuthController {
       request.all()
     )
     const user = await UserService.getUserFromEmail(email)
-    const token = await VerificationService.getToken(verificationCode)
-    if (!VerificationService.isValidToken(user.id, token)) {
+
+    let token
+    try {
+      token = await VerificationService.getToken(verificationCode)
+    } catch (error) {
+      if (!(error instanceof lucidErrors.E_ROW_NOT_FOUND)) {
+        throw error
+      }
+      return response.badRequest({ message: "Invalid verification token" })
+    }
+
+    if (VerificationService.isTokenExpired(token)) {
       return response.status(400).send({
         code: 'E_INVALID_TOKEN',
-        message: 'The verification token is invalid or has expired.',
+        message: 'Expired verification token.',
       })
     }
+
+    if (!VerificationService.isTokenBelongsToUser(user.id, token)) {
+      return response.status(400).send({
+        code: 'E_INVALID_TOKEN',
+        message: 'Verification token doesn\'t belong to user.',
+      })
+    }
+
     await AuthService.changePassword(user, newPassword)
+    await VerificationService.deleteToken(token)
     return response.noContent()
   }
 }
