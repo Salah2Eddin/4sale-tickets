@@ -122,7 +122,6 @@ router.group(() => {
   router.post('/recharge', [WalletController, 'rechargeBalance'])
   router.get('/transactions', [WalletController, 'transactions'])
   router.get('/transaction/:id', [WalletController, 'transaction'])
-  router.post('/pay', [WalletController, 'makeTransaction'])
 }).prefix("/wallet")
   .use([middleware.auth({ guards: ['api'] }), middleware.verification()])
 
@@ -133,11 +132,13 @@ router.group(() => {
   router.post('/bulk-checkin', [TicketController, 'bulkCheckIn'])
 
   router.group(() => {
-    //  router.post('/resell', [TicketController, 'resellTicket'])
-    router.post('/resell/list', [TicketController, 'listForResell'])
-    router.post('/resell/buy', [TicketController, 'buyFromResell'])
     router.get('/refund/:id', [TicketController, 'refund'])
-    router.get('/resell', [TicketController, 'getResell'])
+    
+    router.group(() => {
+      router.post('/list', [TicketController, 'listForResell'])
+      router.post('/buy', [TicketController, 'buyFromResell'])
+      router.get('/', [TicketController, 'getResell'])
+    }).prefix("resell")
 
     router.group(() => {
       router.post("/", [AutoUpgradeController, 'upgrade'])
