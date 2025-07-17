@@ -41,7 +41,7 @@ export default class VerificationController {
       return response.badRequest({ message: "Invalid verification token" })
     }
 
-    if (!VerificationService.isTokenExpired(token)) {
+    if (VerificationService.isTokenExpired(token)) {
       return response.status(400).send({
         code: 'E_INVALID_TOKEN',
         message: 'Expired verification token.',

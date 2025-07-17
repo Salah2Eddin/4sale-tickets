@@ -17,7 +17,9 @@ export default class VerificationService {
   }
 
   static isTokenExpired(token: VerificationToken): boolean {
-    return DateTime.now().diff(token.createdAt).as('second') <= TOKEN_EXPIRY_MINUTES * 60
+    const tokenDT = DateTime.fromJSDate(token.createdAt)
+    const delta = DateTime.now().diff(tokenDT)
+    return delta.as('seconds') > TOKEN_EXPIRY_MINUTES * 60
   }
 
   static async getToken(tokenValue: string): Promise<VerificationToken> {
