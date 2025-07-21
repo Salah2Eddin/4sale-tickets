@@ -139,18 +139,18 @@ export default class TicketService {
   }
 
   static async bulkCheckIn(ticketIds: number[]) {
-    const result = []
+    const result: { id: number; checkedIn: boolean; reason?: string }[] = []
 
-    for (const id of ticketIds) {
+    Promise.all(ticketIds.map(async (id)=>{
       const ticket = await Ticket.find(id)
-      if (ticket && ticket.status === 'valid' && !ticket.checkedIn) {
+      if (ticket && ticket.status === TicketStatus.BOOKED && !ticket.checkedIn) {
         ticket.checkedIn = true
         await ticket.save()
         result.push({ id: ticket.id, checkedIn: true })
       } else {
         result.push({ id, checkedIn: false, reason: 'Invalid check-in' })
       }
-    }
+    }))
 
     return result
   }
